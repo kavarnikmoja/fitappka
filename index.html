@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Erik & Moja Fit">
+<title>Erik & Moja — Fit App</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#222;--bg4:#2a2a2a;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--text2:#9e9b96;--text3:#5e5c58;--accent-e:#5b8ef0;--accent-m:#3ecf8e;--accent-e-bg:rgba(91,142,240,0.12);--accent-m-bg:rgba(62,207,142,0.12);--amber:#f0a44a;--amber-bg:rgba(240,164,74,0.12);--red:#f05b5b;--red-bg:rgba(240,91,91,0.1);--green:#3ecf8e;--green-bg:rgba(62,207,142,0.1);--r:10px;--r2:14px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height:100vh}
+
+/* DACHSHUND MASCOT */
+#dachshund{position:fixed;bottom:70px;right:12px;z-index:200;cursor:pointer;user-select:none;transition:transform .2s}
+#dachshund:hover{transform:scale(1.1)}
+#dachshund svg{width:52px;height:36px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))}
+#dog-bubble{position:fixed;bottom:115px;right:68px;z-index:201;background:var(--bg2);border:1px solid var(--border2);border-radius:12px 12px 0 12px;padding:9px 12px;font-size:12px;color:var(--text);max-width:200px;line-height:1.5;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+#dog-bubble.show{display:block;animation:popIn .2s ease}
+@keyframes popIn{from{opacity:0;transform:scale(0.8) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:100;background:rgba(15,15,15,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 4px;display:flex;justify-content:space-around}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;letter-spacing:.02em;text-transform:uppercase;transition:color .18s;border:none;background:none}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .18s}
+.nav-item.active{color:var(--text)}
+.nav-item.active svg{stroke:var(--accent-e)}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;padding-bottom:90px;animation:fadeIn .18s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* HEADER */
+.screen-header{padding:20px 16px 14px}
+.screen-title{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.screen-sub{font-size:13px;color:var(--text2);margin-top:2px}
+
+/* PILLS */
+.pills{display:flex;gap:6px;padding:0 16px 14px;flex-wrap:wrap}
+.pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--text2);background:none;white-space:nowrap}
+.pill:hover{color:var(--text);border-color:rgba(255,255,255,.25)}
+.pill.active-e{background:var(--accent-e-bg);border-color:var(--accent-e);color:var(--accent-e)}
+.pill.active-m{background:var(--accent-m-bg);border-color:var(--accent-m);color:var(--accent-m)}
+.pill.active{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.pill.active-amber{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);margin:0 16px 10px;overflow:hidden}
+.card-header{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none}
+.card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.card-info{flex:1;min-width:0}
+.card-title{font-size:14px;font-weight:500}
+.card-meta{font-size:12px;color:var(--text2);margin-top:1px}
+.card-chevron{color:var(--text3);font-size:20px;transition:transform .2s;flex-shrink:0;line-height:1}
+.card-chevron.open{transform:rotate(90deg)}
+.card-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.card-body.open{display:block}
+
+/* MACROS */
+.macro-row{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0 8px}
+.macro-tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.m-p{background:rgba(240,164,74,.15);color:#f0a44a}
+.m-s{background:rgba(62,207,142,.12);color:#3ecf8e}
+.m-f{background:rgba(240,91,91,.12);color:#f05b5b}
+.m-k{background:rgba(255,255,255,.07);color:var(--text2)}
+
+/* TABLE */
+.ing-table{width:100%;border-collapse:collapse;font-size:13px}
+.ing-table tr{border-bottom:1px solid var(--border)}
+.ing-table tr:last-child{border-bottom:none}
+.ing-table td{padding:7px 0}
+.ing-table td:last-child{text-align:right;color:var(--text2)}
+
+/* RECIPE */
+.recipe-note{font-size:13px;color:var(--text2);line-height:1.6;background:var(--bg3);padding:10px 12px;border-radius:var(--r);margin-top:10px}
+.recipe-note strong{color:var(--text);font-weight:500}
+
+/* VARIANT BADGE */
+.variant-badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;margin-bottom:8px}
+.v1-badge{background:var(--accent-e-bg);color:var(--accent-e)}
+.v2-badge{background:var(--amber-bg);color:var(--amber)}
+.var-divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+
+/* STATS */
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.stat-val{font-size:20px;font-weight:700;letter-spacing:-.02em}
+
+/* PERSON SWITCH */
+.person-switch{display:flex;gap:8px;padding:0 16px 14px}
+.person-btn{flex:1;padding:10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s}
+.person-btn.active-e{border-color:var(--accent-e);background:var(--accent-e-bg)}
+.person-btn.active-m{border-color:var(--accent-m);background:var(--accent-m-bg)}
+.person-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.av-e{background:rgba(91,142,240,.25);color:var(--accent-e)}
+.av-m{background:rgba(62,207,142,.2);color:var(--accent-m)}
+.person-name{font-size:13px;font-weight:600}
+.person-kcal{font-size:11px;color:var(--text2)}
+
+/* SHOP */
+.shop-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.shop-item:last-child{border-bottom:none}
+.shop-check{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.shop-check.checked{background:var(--green);border-color:var(--green)}
+.shop-check.checked::after{content:'';display:block;width:10px;height:6px;border-left:2px solid #0f0f0f;border-bottom:2px solid #0f0f0f;transform:rotate(-45deg) translateY(-1px)}
+.shop-name{flex:1;font-size:14px}
+.shop-name.done{color:var(--text3);text-decoration:line-through}
+.shop-qty{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;white-space:nowrap}
+.cat-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin:14px 0 4px}
+.clear-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:13px;cursor:pointer;margin:0 16px 10px;transition:all .15s}
+.section-pad{padding:0 16px}
+
+/* TRAINING */
+.phase-title{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin:16px 16px 8px}
+.ex-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);margin:0 16px 8px;overflow:hidden}
+.ex-header{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none}
+.ex-num{width:28px;height:28px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace}
+.ex-info{flex:1;min-width:0}
+.ex-name{font-size:14px;font-weight:500}
+.ex-sets{font-size:12px;color:var(--text2);margin-top:1px}
+.ex-chev{color:var(--text3);font-size:20px;transition:transform .2s;line-height:1}
+.ex-chev.open{transform:rotate(90deg)}
+.ex-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+.ex-body.open{display:block}
+.ex-desc{font-size:13px;color:var(--text2);line-height:1.65;margin:10px 0 8px}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px}
+.tag-eq{background:var(--green-bg);color:var(--green)}
+.tag-mu{background:var(--accent-e-bg);color:var(--accent-e)}
+.tip-ok{background:var(--green-bg);color:#3ecf8e;font-size:13px;padding:7px 10px;border-radius:8px;margin-bottom:5px;line-height:1.5}
+.tip-warn{background:var(--red-bg);color:#f05b5b;font-size:13px;padding:7px 10px;border-radius:8px;margin-bottom:5px;line-height:1.5}
+.sets-row{display:flex;gap:8px;margin-top:8px}
+.sets-box{flex:1;background:var(--bg3);border-radius:8px;padding:8px;text-align:center}
+.sets-box-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.sets-box-val{font-size:14px;font-weight:600;font-family:'DM Mono',monospace}
+
+/* WHO DOES WHAT badge */
+.who-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.who-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.who-e{background:var(--accent-e-bg);color:var(--accent-e)}
+.who-m{background:var(--accent-m-bg);color:var(--accent-m)}
+.who-both{background:rgba(255,255,255,.07);color:var(--text2)}
+
+/* HOME */
+.home-wrap{padding:24px 16px 0}
+.home-hero{background:linear-gradient(135deg,rgba(91,142,240,.15) 0%,rgba(62,207,142,.1) 100%);border:1px solid var(--border2);border-radius:18px;padding:24px 20px;margin-bottom:16px}
+.home-greeting{font-size:26px;font-weight:700;letter-spacing:-.03em;margin-bottom:4px}
+.home-sub{font-size:14px;color:var(--text2)}
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.home-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px 14px;cursor:pointer;transition:all .15s}
+.home-card:hover{border-color:var(--border2);background:var(--bg3)}
+.home-card-icon{font-size:24px;margin-bottom:8px}
+.home-card-title{font-size:14px;font-weight:600;margin-bottom:2px}
+.home-card-sub{font-size:12px;color:var(--text2)}
+.section-heading{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.notice{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--text2);line-height:1.6;margin:0 16px 10px}
+
+/* DESSERT */
+.dessert-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.dessert-title{font-size:12px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.dessert-card{background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-bottom:7px}
+.dessert-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.dessert-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.dessert-kcal{font-size:11px;color:var(--amber);margin-top:3px}
+</style>
+</head>
+<body>
+
+<!-- DACHSHUND MASCOT -->
+<div id="dachshund" onclick="dogTip()">
+  <svg viewBox="0 0 80 55" xmlns="http://www.w3.org/2000/svg">
+    <!-- body -->
+    <ellipse cx="38" cy="32" rx="26" ry="13" fill="#c8874a"/>
+    <!-- head -->
+    <ellipse cx="64" cy="24" rx="14" ry="11" fill="#c8874a"/>
+    <!-- snout -->
+    <ellipse cx="74" cy="27" rx="7" ry="5" fill="#a0622a"/>
+    <!-- nose -->
+    <ellipse cx="78" cy="25" rx="3" ry="2.5" fill="#3d2010"/>
+    <!-- eye -->
+    <circle cx="68" cy="20" r="2.5" fill="#3d2010"/>
+    <circle cx="69" cy="19" r="0.8" fill="white"/>
+    <!-- ear -->
+    <ellipse cx="57" cy="17" rx="6" ry="9" fill="#a0622a" transform="rotate(-15 57 17)"/>
+    <!-- legs -->
+    <rect x="20" y="42" width="7" height="12" rx="3" fill="#a0622a"/>
+    <rect x="32" y="44" width="7" height="10" rx="3" fill="#a0622a"/>
+    <rect x="44" y="44" width="7" height="10" rx="3" fill="#a0622a"/>
+    <rect x="56" y="42" width="7" height="12" rx="3" fill="#a0622a"/>
+    <!-- tail -->
+    <path d="M12 28 Q2 18 8 10" stroke="#c8874a" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- belly -->
+    <ellipse cx="38" cy="40" rx="18" ry="6" fill="#e8b07a" opacity="0.6"/>
+  </svg>
+</div>
+<div id="dog-bubble"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <button class="nav-item active" onclick="showScreen('home')" id="nav-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Přehled
+  </button>
+  <button class="nav-item" onclick="showScreen('jidelnicek')" id="nav-jidelnicek">
+    <svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+    Jídelníček
+  </button>
+  <button class="nav-item" onclick="showScreen('nakup')" id="nav-nakup">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Nákup
+  </button>
+  <button class="nav-item" onclick="showScreen('trenink')" id="nav-trenink">
+    <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 3v18"/><path d="M21 3v18"/><rect x="3" y="9" width="18" height="6" rx="1"/></svg>
+    Trénink
+  </button>
+</nav>
+
+<!-- ===== HOME ===== -->
+<div class="screen active" id="screen-home">
+  <div class="home-wrap">
+    <div class="home-hero">
+      <div class="home-greeting">Erik & Moja 💪</div>
+      <div class="home-sub">Váš fitness průvodce · 7denní plán</div>
+    </div>
+    <div class="section-heading">Rychlý přístup</div>
+    <div class="home-cards">
+      <div class="home-card" onclick="showScreen('jidelnicek')"><div class="home-card-icon">🍽</div><div class="home-card-title">Jídelníček</div><div class="home-card-sub">7 dní · 5 jídel + dezert</div></div>
+      <div class="home-card" onclick="showScreen('nakup')"><div class="home-card-icon">🛒</div><div class="home-card-title">Nákupní seznam</div><div class="home-card-sub">Každý den zvlášť</div></div>
+      <div class="home-card" onclick="showScreen('trenink')"><div class="home-card-icon">🏋️</div><div class="home-card-title">Trénink</div><div class="home-card-sub">4 dny · kdo cvičí co</div></div>
+      <div class="home-card" onclick="showScreen('profil')" id="nav-profil"><div class="home-card-icon">👤</div><div class="home-card-title">Profily</div><div class="home-card-sub">Erik & Moja · makra</div></div>
+    </div>
+    <div class="section-heading">Profily</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="person-avatar av-e" style="width:34px;height:34px">E</div><div><div style="font-weight:600">Erik</div><div style="font-size:12px;color:var(--text2)">22 let · 164 cm · 75 kg</div></div></div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">🏪 Retail manager<br>🔥 2 200 kcal / den<br>🥩 175g bílkovin · 🌾 220g S · 🫒 65g T</div>
+      </div>
+      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="person-avatar av-m" style="width:34px;height:34px">M</div><div><div style="font-weight:600">Moja</div><div style="font-size:12px;color:var(--text2)">24 let · 188 cm · 87 kg</div></div></div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">💻 Home office<br>🔥 1 950 kcal / den<br>🥩 160g bílkovin · 🌾 190g S · 🫒 60g T</div>
+      </div>
+    </div>
+    <div class="notice">⚠️ <strong>Bez:</strong> hub, oliv, slaniny, ryb, seafood, cukety, rukoly. Moja bez jablek. Erik nejí vejce natvrdo ani samotný skyr. Mléko = polotučné kravské.</div>
+  </div>
+</div>
+
+<!-- ===== JÍDELNÍČEK ===== -->
+<div class="screen" id="screen-jidelnicek">
+  <div class="screen-header"><div class="screen-title">Jídelníček</div><div class="screen-sub">5 jídel + dezert · 2 varianty každé jídlo</div></div>
+  <div class="person-switch">
+    <button class="person-btn active-e" id="jbtn-e" onclick="setJPerson('e')"><div class="person-avatar av-e">E</div><div><div class="person-name">Erik</div><div class="person-kcal">2 200 kcal</div></div></button>
+    <button class="person-btn" id="jbtn-m" onclick="setJPerson('m')"><div class="person-avatar av-m">M</div><div><div class="person-name">Moja</div><div class="person-kcal">1 950 kcal</div></div></button>
+  </div>
+  <div class="pills" id="j-day-pills"></div>
+  <div id="j-meals"></div>
+</div>
+
+<!-- ===== NÁKUP ===== -->
+<div class="screen" id="screen-nakup">
+  <div class="screen-header"><div class="screen-title">Nákupní seznam</div><div class="screen-sub">Kliknutím odškrtáš položku</div></div>
+  <div class="pills" id="n-day-pills"></div>
+  <div class="pills" id="n-var-pills"></div>
+  <button class="clear-btn" onclick="clearChecked()">↺ Odškrtnout vše</button>
+  <div id="n-summary" style="display:flex;gap:8px;padding:0 16px 10px"></div>
+  <div class="notice">Množství je součet pro Erika i Moju dohromady za jeden den.</div>
+  <div class="section-pad" id="n-list"></div>
+</div>
+
+<!-- ===== TRÉNINK ===== -->
+<div class="screen" id="screen-trenink">
+  <div class="screen-header"><div class="screen-title">Tréninkový plán</div><div class="screen-sub">SportBox · 50 min · 2× týdně</div></div>
+  <div class="notice">📦 SportBox: rezervace online · max 50 min · oba přiloží kartu při vstupu · zrušit min. 3h předem</div>
+  <div class="pills" id="t-day-pills"></div>
+  <div id="t-content"></div>
+</div>
+
+<!-- ===== PROFIL ===== -->
+<div class="screen" id="screen-profil">
+  <div class="screen-header"><div class="screen-title">Profily</div></div>
+  <div style="padding:0 16px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="person-avatar av-e" style="width:40px;height:40px;font-size:16px">E</div><div><div style="font-size:16px;font-weight:700">Erik</div><div style="font-size:13px;color:var(--text2)">22 let · 164,5 cm · 75 kg · Retail manager</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="stat-card"><div class="stat-label">Cíl kcal</div><div class="stat-val" style="color:var(--accent-e)">2 200</div></div>
+        <div class="stat-card"><div class="stat-label">Bílkoviny</div><div class="stat-val" style="color:var(--amber)">175g</div></div>
+        <div class="stat-card"><div class="stat-label">Sacharidy</div><div class="stat-val" style="color:var(--green)">220g</div></div>
+        <div class="stat-card"><div class="stat-label">Tuky</div><div class="stat-val" style="color:var(--red)">65g</div></div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="person-avatar av-m" style="width:40px;height:40px;font-size:16px">M</div><div><div style="font-size:16px;font-weight:700">Moja</div><div style="font-size:13px;color:var(--text2)">24 let · 188 cm · 87 kg · Home office</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="stat-card"><div class="stat-label">Cíl kcal</div><div class="stat-val" style="color:var(--accent-m)">1 950</div></div>
+        <div class="stat-card"><div class="stat-label">Bílkoviny</div><div class="stat-val" style="color:var(--amber)">160g</div></div>
+        <div class="stat-card"><div class="stat-label">Sacharidy</div><div class="stat-val" style="color:var(--green)">190g</div></div>
+        <div class="stat-card"><div class="stat-label">Tuky</div><div class="stat-val" style="color:var(--red)">60g</div></div>
+      </div>
+    </div>
+    <div class="notice" style="margin:0 0 10px">🐾 Fitness jezevčík hlídá, abyste jedli správně a nezapomínali cvičit. Klikněte na něj pro tip!</div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DACHSHUND TIPS
+// ============================================================
+const DOG_TIPS = [
+  "Haf! Nezapomněli jste na protein ke snídani? 🥚",
+  "Woof! Dneska SportBox? Nezapomeňte rezervaci 3h předem! 📱",
+  "Haf haf! Pijte vodu! Aspoň 2–3 litry denně 💧",
+  "Woof! Meal prep v neděli = klid celý týden! 🍱",
+  "Haf! Protein bar před fitkem = energie navíc! ⚡",
+  "Grr... Bez cukety a rukoly — pamatuji si! 🥦",
+  "Woof! Jste moji oblíbení lidé. Teď jděte cvičit! 🏋️",
+  "Haf! Nedělní pečení kuřecího = tři obědy hotové. Chytré! 🍗",
+  "Woof woof! Hip thrust = nejlepší cvik na zadek. Provádíte ho? 🍑",
+  "Haf! Skyr nestačí sám, ale v receptu je fajn! 😄",
+  "Woof! Polotučné mléko místo mandlového — dobré rozhodnutí! 🥛",
+  "Haf haf! Dezert patří ke zdravému životnímu stylu 🍫",
+];
+let dogIdx = 0;
+function dogTip() {
+  const bubble = document.getElementById('dog-bubble');
+  bubble.textContent = DOG_TIPS[dogIdx % DOG_TIPS.length];
+  dogIdx++;
+  bubble.classList.add('show');
+  setTimeout(() => bubble.classList.remove('show'), 3500);
+}
+// Auto tip every 45s
+setInterval(() => {
+  const bubble = document.getElementById('dog-bubble');
+  bubble.textContent = DOG_TIPS[dogIdx % DOG_TIPS.length];
+  dogIdx++;
+  bubble.classList.add('show');
+  setTimeout(() => bubble.classList.remove('show'), 3500);
+}, 45000);
+
+// ============================================================
+// DATA — MEALS (bez cukety, rukoly; polotučné mléko)
+// ============================================================
+const DAYS = ['Po','Út','St','Čt','Pá','So','Ne'];
+
+// Desserts per day — same for both persons (portions differ slightly)
+const DESSERTS = [
+  // Po
+  [{name:'Tvarohový pohár s ovocem a granolou',desc:'Tvaroh 0% (150g E / 130g M) + borůvky + 1 lžíce granoly + med. Smíchej, vrstvi. Hotovo za 2 min.',kcal_e:210,kcal_m:185,p:18,note:''},
+   {name:'Tmavá čokoláda 85% + ořechy',desc:'2–3 kostičky tmavé čokolády (20g) + hrst mandlí (15g). Nejlepší rychlý dezert po večeři.',kcal_e:195,kcal_m:195,p:5,note:'Min. 85% kakaa'}],
+  // Út
+  [{name:'Protein chia pudink',desc:'Chia (30g) + polotučné mléko (250ml E / 220ml M) + protein prášek (15g) + vanilka. Večer připravit, ráno sníst jako dezert.',kcal_e:220,kcal_m:195,p:20,note:'Připravit večer předem'},
+   {name:'Pečený banán s arašídovým máslem',desc:'Banán rozkrojit, dát na 10 min do trouby na 180°C. Přidat 1 lžičku arašídového másla navrch. Teplý a sladký comfort food.',kcal_e:185,kcal_m:185,p:4,note:''}],
+  // St
+  [{name:'Řecký jogurt s medem a pistáciemi',desc:'Řecký jogurt 0% (150g E / 130g M) + 1 lžička medu + hrst pistácií (15g). Kremový a luxusní pocit.',kcal_e:200,kcal_m:178,p:14,note:''},
+   {name:'Ovesné sušenky s proteinem (batch prep)',desc:'Ovesné vločky (60g) + protein prášek (20g) + arašídové máslo (20g) + med (10g) + vejce (1 ks). Smíchej, tvaruj, peč 12 min na 180°C. Dávka na 6 sušenek.',kcal_e:230,kcal_m:200,p:16,note:'Připrav celou dávku — máš na 2 dny'}],
+  // Čt
+  [{name:'Mango sorbet "fake"',desc:'Mražené mango (120g E / 100g M) rozmixovat s lžící řeckého jogurtu a kapkou citrónu. Hustá konzistence jako sorbet. Bez cukru.',kcal_e:155,kcal_m:135,p:3,note:'Mango musí být zmražené'},
+   {name:'Protein palačinka dezert',desc:'Ovesná mouka (30g) + protein prášek (15g) + vejce (1) + mléko (50ml). 1 velká palačinka s borůvkami a medem navrch.',kcal_e:215,kcal_m:215,p:22,note:''}],
+  // Pá
+  [{name:'Tmavá čokoláda s malinami',desc:'3 kostičky tmavé čokolády 85% (25g) + čerstvé nebo rozmražené maliny (80g). Antioxidanty + potěšení.',kcal_e:180,kcal_m:180,p:3,note:''},
+   {name:'Protein shake dezertní verze',desc:'Protein prášek čokoláda (30g E / 25g M) + polotučné mléko (200ml) + ledové kostky + 1 banán. Šejkuj energicky — jako milkshake.',kcal_e:285,kcal_m:248,p:28,note:'Pít pomalu jako dezert, ne jako svačinu'}],
+  // So
+  [{name:'Domácí protein brownie (dávka na týden)',desc:'Protein prášek čokoláda (60g) + avokádo (1 ks, ~130g) + vejce (2) + med (20g) + kakao (15g). Blend, peč v muffin formě 18 min na 170°C. 6 kusů.',kcal_e:195,kcal_m:195,p:14,note:'Sobotní batch prep — máš dezert na celý týden'},
+   {name:'Jahody s mascarpone a medem',desc:'Jahody (100g) + mascarpone (30g) + med (8g). Jednoduchá italská klasika. Hotovo za 2 minuty.',kcal_e:175,kcal_m:175,p:3,note:''}],
+  // Ne
+  [{name:'Nedělní palačinky (sdílený dezert)',desc:'Ovesná mouka (80g) + vejce (2) + mléko (150ml) + protein prášek (20g) + vanilka. Malé palačinky s medem a borůvkami. Pro oba dohromady.',kcal_e:240,kcal_m:210,p:20,note:'Neděle = dezert se zaslouží'},
+   {name:'Kefír s granolou a kiwi',desc:'Kefír (200ml E / 180ml M) + protein granola (30g) + kiwi (1 ks). Probiotika + sladkost. Lehčí volba po nedělním vývaru.',kcal_e:195,kcal_m:175,p:12,note:''}],
+];
+
+// MEALS — E data, M is auto-scaled 88%
+// NO cuketa, NO rukola, NO mandlové mléko (replaced with polotučné kravské mléko)
+// Varied prílohy: rýže, brambory, domácí hranolky, kaše, quinoa, bulgur
+const MEALS_E = [
+ // Po
+ [{title:'Snídaně',variants:[
+   {name:'Overnight oats s proteinem a borůvkami',kcal:480,p:38,s:52,f:10,ing:[['Ovesné vločky',80],['Řecký jogurt 0%',150],['Protein prášek (vanilka)',25],['Borůvky',80],['Med',10],['Polotučné mléko',100]],recipe:'Večer smíchej vločky, jogurt, protein a mléko. Ráno přidej borůvky a med. 3 minuty práce, žádné vaření.'},
+   {name:'Míchaná vejce s celozrnným toastem a avokádem',kcal:470,p:38,s:38,f:18,ing:[['Vejce',150],['Celozrnný toast',80],['Avokádo',70],['Rajče',80],['Olivový olej',8],['Sůl, pepř',2]],recipe:'Vejce rozklepni, přidej špetku soli, míchej na pánvi na středním ohni 3 min. Toast opéct. Avokádo rozmačkat s citrónem. Podávej dohromady.'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Protein shake + banán',kcal:310,p:32,s:40,f:4,ing:[['Whey protein (čokoláda)',35],['Banán',120],['Polotučné mléko',250]],recipe:'Blend nebo zamíchat. Rychlé a sytné.'},
+   {name:'Tvaroh s jahodami a lněným semínkem',kcal:300,p:30,s:28,f:6,ing:[['Tvaroh 0%',200],['Jahody',120],['Lněné semínko',10],['Med',8]],recipe:'Smíchej vše. Jahody nakrájej. Podávej studené.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Kuřecí prsa s rýží a zeleninou',kcal:580,p:52,s:58,f:12,ing:[['Kuřecí prsa',200],['Rýže basmati suchá',80],['Paprika',100],['Brokolice',120],['Cibule',50],['Olivový olej',10],['Česnek, koření',5]],recipe:'Rýži uvař dle návodu (15 min). Kuřecí nakrájej na kostky, okoř, opeč na pánvi 6-7 min. Papriku a brokolici přidej na konci, orestuj 3 min. Smíchej.'},
+   {name:'Tofu stir-fry s rýžovými nudlemi',kcal:565,p:36,s:65,f:13,ing:[['Pevné tofu',220],['Rýžové nudle',80],['Brokolice',150],['Mrkev',80],['Sójová omáčka',15],['Sezamový olej',8],['Zázvor, česnek',5]],recipe:'Nudle zalij vroucí vodou na 5 min, sceď. Tofu nakrájej, opeč dozlatova. Přidej zeleninu, sójovku, stir-fry 5 min. Smíchej s nudlemi.'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Rýžové chlebíčky s hummusem a mrkví',kcal:250,p:8,s:32,f:7,ing:[['Rýžové chlebíčky',40],['Hummus',60],['Mrkev',100]],recipe:'Natřít hummus, přidat mrkev nakrájenou na tyčky.'},
+   {name:'Edamame + parmezán',kcal:240,p:18,s:18,f:8,ing:[['Edamame loupané',100],['Parmezán',20],['Citron',10]],recipe:'Edamame rozmraste. Parmezán nastrouhej navrch, pokarej citrónem.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Kuřecí tikka masala s domácími bramborovými hranolky',kcal:590,p:52,s:55,f:14,ing:[['Kuřecí prsa',220],['Brambory',250],['Rajčatový protlak',100],['Kravské mléko polotučné',80],['Cibule',60],['Česnek, zázvor, garam masala, kurkuma',10],['Olivový olej',10]],recipe:'Hranolky: brambory nakrájej na klínky, okoř olivovým olejem a paprikou, peč 25 min na 200°C. Tikka: cibuli a česnek orestuj, přidej koření, rajčatový protlak a mléko, vař 15 min, přidej orestované kuřecí.'},
+   {name:'Kuřecí caesar salát s parmezánem',kcal:555,p:50,s:35,f:16,ing:[['Kuřecí prsa',200],['Římský salát',150],['Celozrnný chléb',50],['Parmezán',20],['Caesar dresink light',30]],recipe:'Kuřecí opéct, nakrájet. Chleba nakrájet na kostky, orestovat. Salát smíchat s dresinkem, přidat kuřecí, krutony a parmezán.'}
+ ]}],
+ // Út
+ [{title:'Snídaně',variants:[
+   {name:'Proteinové lívance s malinami',kcal:490,p:40,s:50,f:11,ing:[['Ovesná mouka',80],['Protein prášek',25],['Řecký jogurt',100],['Vejce',50],['Maliny',100],['Polotučné mléko',80]],recipe:'Smíchej suché (mouka, protein), přidej mokré (vejce, jogurt, mléko). Peč malé lívance na nepřilnavé pánvi bez tuku, 2 min z každé strany. Podávej s malinami.'},
+   {name:'Chia pudink s mangem a kokosem',kcal:465,p:30,s:55,f:11,ing:[['Chia semínka',40],['Polotučné mléko',300],['Řecký jogurt',120],['Mango',100],['Strouhaný kokos',10]],recipe:'Večer smíchej chia s mlékem a jogurtem, dej do lednice. Ráno přidej mango nakrájené na kostky a kokos.'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Energy balls s proteinem',kcal:300,p:28,s:30,f:8,ing:[['Protein prášek',30],['Ovesné vločky',50],['Arašídové máslo',15],['Med',10],['Kokosová moučka',10]],recipe:'Smíchej vše dohromady. Tvaruj do kuliček. Dej na 30 min do lednice. Dávka na 5–6 kusů.'},
+   {name:'Cottage cheese s jahodami a granolou',kcal:290,p:32,s:24,f:4,ing:[['Cottage cheese',200],['Jahody',120],['Granola bez cukru',20]],recipe:'Smíchej, posyp granolou. Rychlá a sytná svačina.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Buddha bowl s tofu a tahini dresinkem',kcal:585,p:36,s:62,f:16,ing:[['Pevné tofu',200],['Rýže basmati',80],['Špenát baby',80],['Červená řepa vařená',80],['Avokádo',60],['Tahini',20],['Citron, česnek',10]],recipe:'Rýži uvař. Tofu nakrájej na kostky, opeč dozlatova (5 min). Tahini dressing: tahini + citronová šťáva + česnek + trocha vody — míchej do řídnutí. Naskládej do misky vše, přelij dresinkem.'},
+   {name:'Kuřecí wrap s tzatziki a zeleninou',kcal:570,p:50,s:55,f:13,ing:[['Kuřecí prsa',180],['Celozrnná tortilla',70],['Řecký jogurt',80],['Okurka',80],['Rajče',80],['Listový salát',40]],recipe:'Kuřecí okoř a opeč (6 min). Tzatziki: jogurt + nastrouhená okurka + česnek + citron + sůl. Tortillu nahřej 30 s na pánvi, naplň kuřecím, zeleninou a tzatziki, sroluj.'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Mandle + protein shake',kcal:260,p:28,s:12,f:12,ing:[['Mandle',25],['Protein prášek',30],['Polotučné mléko',200]],recipe:'Shake zamíchej. Mandle sněz zvlášť jako crunch.'},
+   {name:'Pečená cizrna se kořením',kcal:248,p:12,s:30,f:6,ing:[['Cizrna z plechovky',150],['Paprika, kmín, sůl',3],['Olivový olej',6]],recipe:'Cizrnu osušit papírovým ručníkem. Smíchej s olejem a kořením. Peč 20 min na 200°C do křupava.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Pečené kuřecí s bramborovou kaší a brokolicí',kcal:570,p:52,s:48,f:13,ing:[['Kuřecí prsa',220],['Brambory',250],['Brokolice',150],['Polotučné mléko',80],['Máslo',10],['Olivový olej',8]],recipe:'Brambory uvař, rozmačkej s mlékem, máslem, solí a pepřem na kaši. Kuřecí prsa okoř, opeč na pánvi nebo peč v troubě 20 min. Brokolici uvař nebo zpaří 5 min. Vše podávej dohromady.'},
+   {name:'Tofu teriyaki s rýží a pak choi',kcal:555,p:34,s:62,f:14,ing:[['Pevné tofu',220],['Rýže basmati',80],['Pak choi',150],['Sójová omáčka',20],['Med',10],['Sezamový olej',8]],recipe:'Teriyaki omáčka: sójová + med + sezamový olej + špetka zázvoru. Tofu nakrájej, opeč, přelij omáčkou, karamelizuj 3 min. Rýži uvař. Pak choi krátce orestuj na oleji.'}
+ ]}],
+ // St
+ [{title:'Snídaně',variants:[
+   {name:'Smoothie bowl s proteinem a granolou',kcal:490,p:36,s:58,f:10,ing:[['Mražené borůvky',120],['Banán mražený',100],['Protein prášek',25],['Polotučné mléko',150],['Granola',30],['Čerstvé ovoce',50]],recipe:'Blend borůvky, banán, protein a mléko na nejvyšší rychlost — musí být hustá konzistence (ne tekutá). Nalij do misky. Posyp granolou a ovocem. Jíst lžičkou.'},
+   {name:'Celozrnný toast s avokádem a vejcem',kcal:480,p:32,s:48,f:16,ing:[['Celozrnný chléb',100],['Avokádo',80],['Vejce',100],['Rajče cherry',80],['Citron, chilli',4]],recipe:'Toast opéct. Vejce jako volské oko nebo míchaná (2 min na pánvi). Avokádo rozmačkat s citrónem a solí. Naskládat na toast, přidat rajčátka a chilli.'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Řecký jogurt s proteinem a kiwi',kcal:308,p:34,s:28,f:5,ing:[['Řecký jogurt 0%',200],['Protein prášek',20],['Kiwi',80],['Kešu ořechy',15]],recipe:'Protein prášek zamíchat do jogurtu (schová se v chuti). Přidat nakrájené kiwi a kešu.'},
+   {name:'Protein mug cake',kcal:295,p:30,s:30,f:7,ing:[['Protein prášek',30],['Ovesná mouka',30],['Vejce',50],['Polotučné mléko',50],['Prášek do pečiva',2]],recipe:'Smíchej vše v hrníčku. Mikrovlnka 90 sekund na max. Hotovo — jez přímo z hrníčku.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Kuřecí plněné papriky s rýží',kcal:575,p:52,s:52,f:14,ing:[['Kuřecí prsa mleté',200],['Rýže basmati',70],['Paprika červená',200],['Rajčata',100],['Cibule',50],['Parmezán',20],['Koření',8]],recipe:'Rýži uvař. Kuřecí orestuj s cibulí, přidej rajčata a koření. Smíchej s rýží. Papriky rozkrojit, naplnit směsí, posypat parmezánem, péct 25 min na 180°C.'},
+   {name:'Tofu a špenátové kari s quinoou',kcal:562,p:36,s:60,f:14,ing:[['Pevné tofu',200],['Špenát čerstvý',100],['Quinoa suchá',70],['Kokosové mléko',100],['Cibule, česnek, zázvor',15],['Curry koření',5],['Olivový olej',8]],recipe:'Cibuli, česnek a zázvor orestuj, přidej curry. Přilij kokosové mléko. Přidej tofu nakrájené, vař 10 min. Na konci vmíchej špenát (2 min). Quinoa: uvař dle návodu (15 min).'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Celozrnné crackery s hummusem a paprikou',kcal:240,p:8,s:32,f:7,ing:[['Celozrnné crackery',40],['Hummus',80],['Paprika',80]],recipe:'Krájet papriku na proužky a namáčet s crackery do hummusu.'},
+   {name:'String cheese + mrkev tyčky',kcal:230,p:14,s:16,f:7,ing:[['Mozzarella tyčinka (string cheese)',50],['Mrkev',150]],recipe:'Mrkev nakrájej na tyčky. Přímý snack, žádná příprava.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Kuřecí gyros bowl s bramborovými klínky',kcal:580,p:52,s:50,f:14,ing:[['Kuřecí prsa',220],['Brambory',200],['Řecký jogurt 0%',100],['Okurka',80],['Rajče',80],['Červená cibule',30],['Citron, česnek, oregano',10]],recipe:'Brambory nakrájej na klínky, okoř olivovým olejem a oreganem, peč 25 min. Kuřecí marinuj v jogurtu s paprikou a česnekem, opeč na pánvi. Tzatziki: jogurt + okurka + česnek + citron. Podávej dohromady.'},
+   {name:'Miso tofu s edamame a hnědou rýží',kcal:558,p:36,s:62,f:15,ing:[['Pevné tofu',220],['Hnědá rýže suchá',80],['Edamame',80],['Miso pasta',20],['Med',8],['Sójová omáčka',12],['Sezamový olej',8]],recipe:'Miso glazura: miso + med + sójovka + sezamový olej — zamíchej. Tofu nakrájej, přelij glazurou, peč 20 min na 200°C. Rýže: uvař dle návodu (30 min). Edamame rozmraze a přidej.'}
+ ]}],
+ // Čt
+ [{title:'Snídaně',variants:[
+   {name:'Baked oats s proteinem a malinami',kcal:488,p:38,s:52,f:9,ing:[['Ovesné vločky',90],['Protein prášek',25],['Polotučné mléko',150],['Maliny',80],['Med',10],['Skořice',2]],recipe:'Smíchej vše v zapékací misce. Přidej maliny navrch, posyp skořicí. Peč 25 min na 180°C. Skvělé na meal prep — připrav 2–3 porce najednou.'},
+   {name:'Protein granola s řeckým jogurtem',kcal:478,p:36,s:50,f:11,ing:[['Řecký jogurt 0%',200],['Protein granola',60],['Borůvky',80],['Med',8]],recipe:'Vrstvi do misky: jogurt — granola — borůvky — zakap medem. Protein granola musí mít min. 15g proteinu na 100g (zkontroluj etiketu).'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Skyr s proteinem a ovocem',kcal:298,p:34,s:24,f:4,ing:[['Skyr',200],['Protein prášek',15],['Jahody',100],['Lněné semínko',10]],recipe:'Protein zamíchat do skyru. Přidat ovoce a semínka. Poznámka: Skyr samotný Erikovi nechutná, ale s proteinem a ovocem je OK.'},
+   {name:'Rice cake s arašídovým máslem a banánem',kcal:285,p:14,s:38,f:8,ing:[['Rýžové chlebíčky',50],['Arašídové máslo',20],['Banán',80]],recipe:'Natřít arašídové máslo na chlebíčky. Přidat plátky banánu navrch.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Kuřecí s quinoou, rajčaty a fetou',kcal:585,p:52,s:52,f:15,ing:[['Kuřecí prsa',200],['Quinoa suchá',80],['Rajčata cherry',80],['Okurka',80],['Feta sýr',30],['Citron, olivový olej, bazalka',12]],recipe:'Quinoa uvař. Kuřecí opeč a nakrájej. Vše smíchej. Dressing: olivový olej + citron + sůl + pepř. Fetu rozdrobit navrch, přidat bazalku.'},
+   {name:'Tofu scramble s batáty',kcal:572,p:36,s:64,f:14,ing:[['Pevné tofu',200],['Sladké brambory',200],['Špenát',80],['Cibule',60],['Česnek, kurkuma, paprika',8],['Olivový olej',10]],recipe:'Batáty nakrájej na kostky, okoř, peč 25 min na 200°C. Tofu rozdrobej vidličkou, orestuj s cibulí a kořením 5 min. Na konci přidej špenát (2 min). Podávej s batáty.'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Protein shake s mlékem',kcal:258,p:30,s:12,f:8,ing:[['Protein prášek',35],['Polotučné mléko',250],['Mandle',15]],recipe:'Zamíchat nebo blend. Mandle sněz zvlášť.'},
+   {name:'Toast s cottage cheese a rajčetem',kcal:248,p:18,s:26,f:4,ing:[['Celozrnný chléb',60],['Cottage cheese',100],['Rajče',80],['Pažitka',3]],recipe:'Toast opéct. Natřít cottage cheese, přidat rajče, posypat pažitkou.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Kuřecí s bulgurovou tabulí a fetou',kcal:572,p:50,s:50,f:14,ing:[['Kuřecí prsa',200],['Bulgur suchý',80],['Rajčata',100],['Okurka',80],['Feta sýr',30],['Petrželka čerstvá',20],['Olivový olej, citron',12]],recipe:'Bulgur: zalij vroucí vodou 1:2, zakryj na 15 min — připraven sám. Kuřecí opeč. Rajčata a okurku nakrájej. Vše smíchej, přidej festu, petrželku a dressing.'},
+   {name:'Tofu a cizrnové kari s bramborami',kcal:558,p:36,s:58,f:15,ing:[['Pevné tofu',180],['Cizrna z plechovky',120],['Brambory',200],['Rajčatový protlak',100],['Kravské mléko',80],['Cibule, česnek, kari koření',12]],recipe:'Brambory uvař. Cibuli orestuj, přidej kari koření, rajčatový protlak a mléko. Přidej tofu a cizrnu, vař 12 min. Podávej s uvařenými bramborami.'}
+ ]}],
+ // Pá
+ [{title:'Snídaně',variants:[
+   {name:'French toast z celozrnného chleba',kcal:488,p:38,s:50,f:11,ing:[['Celozrnný chléb',100],['Vejce',100],['Polotučné mléko',80],['Protein prášek vanilka',20],['Borůvky',80],['Skořice, vanilka',3]],recipe:'Vejce rozšlehej s mlékem, proteinem a skořicí. Chleba namáčej (30 s na stranu), opékej na nepřilnavé pánvi 2-3 min z každé strany. Podávej s borůvkami.'},
+   {name:'Protein wrap s cottage cheese a ovocem',kcal:472,p:36,s:50,f:10,ing:[['Celozrnná tortilla',80],['Cottage cheese',150],['Jahody',100],['Banán',60],['Med',8]],recipe:'Natřít cottage cheese na tortillu. Přidat nakrájené ovoce. Zarolovat. Studená snídaně na cesty.'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Protein shake se špenátem a banánem',kcal:308,p:32,s:38,f:5,ing:[['Protein prášek',30],['Banán',100],['Špenát čerstvý',40],['Polotučné mléko',250]],recipe:'Blend vše dohromady. Špenát se v chuti ztratí — důvěřuj procesu.'},
+   {name:'Edamame s citronovou solí',kcal:288,p:22,s:22,f:8,ing:[['Edamame loupané',150],['Citron',15],['Mořská sůl',2]],recipe:'Edamame uvař (3 min) nebo rozmraz. Pokarej citrónem, posyp solí.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Kuřecí s rýží, salátem a citronovým dresinkem',kcal:578,p:52,s:54,f:14,ing:[['Kuřecí prsa',200],['Rýže basmati',80],['Listový salát',60],['Okurka',80],['Rajčata cherry',80],['Piniové oříšky',15],['Citron, olivový olej',12]],recipe:'Rýži uvař. Kuřecí opeč a nakrájej. Vše smíchej, přidej dressing (olivový olej + citron + sůl + pepř), posyp piniáky.'},
+   {name:'Mexické tofu burrito bowl',kcal:568,p:38,s:62,f:14,ing:[['Pevné tofu',200],['Rýže basmati',80],['Černé fazole z plechovky',100],['Kukuřice mražená',60],['Rajčata',80],['Citron, chilli, kmín, paprika',8],['Řecký jogurt',50]],recipe:'Tofu rozdrobej, okoř (paprika, kmín, chilli), orestuj dozlatova. Rýži uvař. Naskládej do misky. Řecký jogurt jako náhražka zakysané smetany.'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Protein granola bar + mléko',kcal:248,p:12,s:28,f:8,ing:[['Protein granola bar (Fulfil/Barebells)',55],['Polotučné mléko',200]],recipe:'Zkontroluj etiketu: min. 20g proteinu v baru. Ideální pre-workout snack v pátek.'},
+   {name:'Mrkev s hummusem',kcal:228,p:8,s:26,f:7,ing:[['Mrkev',200],['Hummus',80]],recipe:'Mrkev nakrájej na tyčky, dip do hummusu.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Kuřecí pita s čerstvou zeleninou a tzatziki',kcal:572,p:52,s:50,f:13,ing:[['Kuřecí prsa',200],['Celozrnná pita',80],['Rajče',80],['Okurka',80],['Červená cibule',30],['Řecký jogurt',80]],recipe:'Kuřecí marinuj (paprika, česnek, citron) a opeč. Tzatziki: jogurt + nastrouhá okurka + česnek + citron. Pitu nahřej 1 min v troubě, naplň.'},
+   {name:'Tofu ratatouille s quinoou',kcal:552,p:34,s:58,f:15,ing:[['Pevné tofu',200],['Lilek',120],['Rajčata',120],['Paprika',100],['Quinoa',70],['Provence koření, olivový olej',12]],recipe:'Lilek, rajčata a papriku nakrájej, orestuj s provence kořením 10 min. Tofu nakrájej a opeč zvlášť, přidej k zelenině. Quinoa uvař.'}
+ ]}],
+ // So
+ [{title:'Snídaně',variants:[
+   {name:'Proteinové palačinky s borůvkovou omáčkou',kcal:508,p:42,s:52,f:11,ing:[['Ovesná mouka',90],['Protein prášek',30],['Řecký jogurt',100],['Polotučné mléko',100],['Borůvky',120],['Med',10]],recipe:'Smíchej suché (mouka, protein), přidej mokré (jogurt, mléko). Peč malé palačinky na pánvi. Borůvky zahřej v hrnci s kapkou medu — rozvárí se na omáčku.'},
+   {name:'Smoothie bowl green power',kcal:488,p:36,s:56,f:10,ing:[['Protein prášek vanilka',25],['Špenát',60],['Mango mražené',120],['Polotučné mléko',200],['Granola',30],['Kiwi',80]],recipe:'Blend protein, špenát, mango a mléko do husté konzistence. Nalijte do misky. Ozdobte granolou a nakrájeným kiwi.'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Řecký jogurt parfait',kcal:308,p:30,s:30,f:6,ing:[['Řecký jogurt 0%',200],['Protein granola',40],['Maliny',80],['Med',10]],recipe:'Vrstvi do pohárku: jogurt — granola — maliny — kapka medu. Téměř jako dezert.'},
+   {name:'Protein kuličky (batch prep)',kcal:298,p:28,s:26,f:8,ing:[['Protein prášek',35],['Ovesné vločky mleté',50],['Arašídové máslo',20],['Med',12],['Kakao',5]],recipe:'Smíchej vše. Tvaruj do kuliček (přibližně vlhký tvaroh konzistence). Dej na 30 min do lednice. Dávka na 5–6 kusů — uchovej až 5 dní.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Kuřecí tandoori s rýží a raita jogurtem',kcal:588,p:54,s:54,f:13,ing:[['Kuřecí prsa',220],['Rýže basmati',80],['Řecký jogurt',120],['Okurka',80],['Citron, česnek, zázvor, tandoori koření',12]],recipe:'Kuřecí: marinuj min. 1h (nebo přes noc) v jogurtu s tandoori kořením, česnekem a zázvorem. Opeč na pánvi nebo peč v troubě. Raita: jogurt + nastrouhá okurka + citron + sůl. Rýži uvař.'},
+   {name:'Quinoa tabuleh s tofu',kcal:568,p:36,s:60,f:14,ing:[['Quinoa suchá',80],['Pevné tofu',180],['Rajčata',120],['Okurka',100],['Petrželka čerstvá',30],['Máta čerstvá',10],['Citron, olivový olej',15]],recipe:'Quinoa uvař a nech vychladnout. Tofu nakrájej na kostky a opeč. Vše nakrájej, smíchej s olejem a citronem. Přidat petrželku a mátu — dávají čerstvost.'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Protein shake + ořechy',kcal:268,p:30,s:10,f:12,ing:[['Protein prášek',35],['Vlašské ořechy',20],['Polotučné mléko',250]],recipe:'Shake zamíchej. Ořechy sněz zvlášť — kombinace bílkoviny + zdravé tuky.'},
+   {name:'Cottage cheese s okurkou a pažitkou',kcal:238,p:24,s:8,f:4,ing:[['Cottage cheese',200],['Okurka',150],['Pažitka, sůl, pepř',3]],recipe:'Smíchej. Nakrájej okurku na kostičky. Dochuť.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Kuřecí fajitas s guacamole',kcal:588,p:52,s:52,f:15,ing:[['Kuřecí prsa',200],['Celozrnné tortilly',80],['Paprika mix',150],['Cibule',60],['Avokádo',80],['Citron, chilli, kmín, paprika',10],['Řecký jogurt',40]],recipe:'Kuřecí nakrájej na proužky, okoř (kmín, paprika, chilli). Opeč s paprikou a cibulí na silném ohni 5 min. Guacamole: avokádo + citron + sůl + chilli. Tortilly nahřej, plň, sroluj.'},
+   {name:'Pečené tofu s batátovým pyré a špenátem',kcal:568,p:36,s:60,f:14,ing:[['Pevné tofu',220],['Sladké brambory',250],['Špenát čerstvý',100],['Česnek, muškátový oříšek',5],['Olivový olej',10],['Polotučné mléko',60]],recipe:'Batáty uvař, rozmačkej s mlékem, muškátem a solí. Tofu marinuj (sójovka + olej + česnek), peč 25 min na 200°C. Špenát podus na pánvi s česnekem 2 min.'}
+ ]}],
+ // Ne
+ [{title:'Snídaně',variants:[
+   {name:'Avokádový toast s vejci a cottage cheese',kcal:508,p:40,s:48,f:15,ing:[['Celozrnný chléb',100],['Avokádo',80],['Vejce',100],['Cottage cheese',100],['Rajče cherry',80],['Citron, chilli',4]],recipe:'Toast opéct. Vejce jako míchaná nebo volské oko. Avokádo rozmačkat s citrónem. Cottage cheese natřít na toast, přidat vejce, avokádo a rajčátka.'},
+   {name:'Proteinové wafle',kcal:492,p:38,s:50,f:12,ing:[['Ovesná mouka',80],['Protein prášek',30],['Vejce',100],['Řecký jogurt',100],['Polotučné mléko',80],['Borůvky',100]],recipe:'Smíchej vše do hladka. Peč ve waflovači (4–5 min) nebo jako American pancakes (2 min z každé strany). Podávej s borůvkami.'}
+ ]},{title:'Svačina 1',variants:[
+   {name:'Mango lassi protein verze',kcal:308,p:32,s:34,f:4,ing:[['Mango',120],['Řecký jogurt',150],['Protein prášek',20],['Polotučné mléko',150],['Kardamom',1]],recipe:'Blend vše. Servíruj studené. Indická klasika v protein verzi.'},
+   {name:'Celozrnné crackery s avokádem',kcal:292,p:8,s:32,f:12,ing:[['Celozrnné crackery',50],['Avokádo',80],['Citron, sůl, chilli',3]],recipe:'Avokádo rozmačkej s citronem a solí. Natřít na crackery.'}
+ ]},{title:'Oběd',variants:[
+   {name:'Nedělní kuřecí vývar s nudlemi a zeleninou',kcal:572,p:52,s:54,f:12,ing:[['Kuřecí prsa',200],['Celozrnné nudle',80],['Mrkev',80],['Celer',60],['Petrželka čerstvá',20],['Cibule, česnek',20]],recipe:'Kuřecí uvař ve vodě s cibulí, mrkví, celerem a česnekem 30 min. Vyndej, nakrájej. Vývar přeceď, uvař nudle, vrať vše zpět. Posyp petrželkou. Nedělní klasika — vývar je bohatý na kolagen.'},
+   {name:'Tofu poke bowl',kcal:558,p:34,s:60,f:15,ing:[['Pevné tofu',200],['Rýže sushi',80],['Edamame',80],['Avokádo',60],['Okurka',80],['Sójová omáčka',15],['Rýžový ocet',10],['Sezam',5]],recipe:'Rýži uvař, přidej rýžový ocet a med, promíchej. Tofu marinuj v sójovce 15 min, opeč. Naskládej do misky, posyp sezamem.'}
+ ]},{title:'Svačina 2',variants:[
+   {name:'Protein tyčinka + maliny',kcal:258,p:22,s:24,f:6,ing:[['Protein tyčinka (Barebells/Fulfil)',55],['Maliny',100]],recipe:'Zkontroluj etiketu — min. 20g proteinu.'},
+   {name:'Skyr s lněným semínkem a kiwi',kcal:248,p:24,s:20,f:4,ing:[['Skyr',200],['Kiwi',80],['Lněné semínko',10]],recipe:'Smíchej. Kiwi nakrájej na kousky.'}
+ ]},{title:'Večeře',variants:[
+   {name:'Sunday meal prep bowl (kuřecí + brambory + brokolice)',kcal:578,p:54,s:52,f:13,ing:[['Kuřecí prsa',220],['Brambory',200],['Brokolice',120],['Olivový olej',10],['Citron, česnek, paprika',8]],recipe:'NEDĚLNÍ MEAL PREP! Uvař větší dávku brambor a brokolice. Kuřecí opeč nebo peč. Rozděl do boxů na Po a Út. Ušetříš vaření 2× v týdnu.'},
+   {name:'Tofu a sladký brambor Thai curry',kcal:562,p:34,s:60,f:15,ing:[['Pevné tofu',220],['Sladké brambory',200],['Kokosové mléko',100],['Thai curry pasta',20],['Rýže basmati',70],['Cibule, česnek, zázvor',13]],recipe:'Cibuli, česnek a zázvor orestuj. Přidej curry pastu, kokosové mléko, batáty nakrájené na kostky. Vař 10 min. Přidej tofu, vař dalších 5 min. Podávej s rýží.'}
+ ]}],
+];
+
+// MEALS_M = E × 0.88 (approximate scaling)
+const MEALS_M = MEALS_E.map(day => day.map(meal => ({
+  title: meal.title,
+  variants: meal.variants.map(v => ({
+    ...v,
+    kcal: Math.round(v.kcal * 0.88),
+    p: Math.round(v.p * 0.88),
+    s: Math.round(v.s * 0.88),
+    f: Math.round(v.f * 0.88),
+    ing: v.ing.map(([name, g]) => [name, g ? Math.round(g * 0.88) : g])
+  }))
+})));
+
+const MEALS = { e: MEALS_E, m: MEALS_M };
+
+// SHOPPING — V1 lists per day
+const SHOP_V1 = [
+  [{n:'Ovesné vločky',g:150,m:'Snídaně'},{n:'Řecký jogurt 0%',g:280,m:'Snídaně'},{n:'Protein prášek vanilka',g:50,m:'Snídaně+Sv1'},{n:'Borůvky',g:150,m:'Snídaně'},{n:'Med',g:18,m:'Snídaně'},{n:'Polotučné mléko',g:600,m:'Snídaně+Sv1'},{n:'Whey protein čokoláda',g:35,m:'Sv1'},{n:'Banán',g:120,m:'Sv1'},{n:'Kuřecí prsa',g:420,m:'Oběd+Večeře'},{n:'Rýže basmati',g:160,m:'Oběd'},{n:'Paprika',g:200,m:'Oběd'},{n:'Brokolice',g:240,m:'Oběd+Večeře'},{n:'Cibule',g:110,m:'Oběd+Večeře'},{n:'Česnek',g:10,m:'Oběd+Večeře'},{n:'Olivový olej',g:20,m:'Oběd+Večeře'},{n:'Rýžové chlebíčky',g:40,m:'Sv2'},{n:'Hummus',g:60,m:'Sv2'},{n:'Mrkev',g:100,m:'Sv2'},{n:'Rajčatový protlak',g:100,m:'Večeře'},{n:'Brambory',g:250,m:'Večeře'},{n:'Garam masala, kurkuma',g:0,note:'ze zásoby',m:'Večeře'},{n:'Zázvor čerstvý',g:0,note:'1 kus',m:'Večeře'},{n:'Tvaroh 0%',g:200,m:'Sv1 (Dezert)'}],
+  [{n:'Ovesná mouka',g:150,m:'Snídaně'},{n:'Protein prášek',g:55,m:'Snídaně+Sv1'},{n:'Vejce',g:50,note:'1 ks',m:'Snídaně'},{n:'Maliny',g:200,m:'Snídaně'},{n:'Polotučné mléko',g:580,m:'Snídaně+Sv2'},{n:'Arašídové máslo',g:15,m:'Sv1'},{n:'Ovesné vločky',g:50,m:'Sv1'},{n:'Med',g:10,m:'Sv1'},{n:'Pevné tofu',g:420,m:'Oběd+Večeře'},{n:'Rýže basmati',g:80,m:'Oběd'},{n:'Špenát baby',g:80,m:'Oběd'},{n:'Tahini',g:20,m:'Oběd'},{n:'Avokádo',g:60,m:'Oběd'},{n:'Červená řepa vařená',g:80,m:'Oběd'},{n:'Mandle',g:25,m:'Sv2'},{n:'Brambory',g:250,m:'Večeře'},{n:'Brokolice',g:150,m:'Večeře'},{n:'Máslo',g:10,m:'Večeře'},{n:'Pak choi',g:150,m:'Večeře'},{n:'Sójová omáčka',g:20,m:'Večeře'},{n:'Sezamový olej',g:8,m:'Večeře'},{n:'Chia semínka',g:60,m:'Dezert'}],
+  [{n:'Mražené borůvky',g:120,m:'Snídaně'},{n:'Banán mražený',g:100,m:'Snídaně'},{n:'Protein prášek',g:45,m:'Snídaně+Sv1'},{n:'Polotučné mléko',g:450,m:'Snídaně+Sv1'},{n:'Granola',g:30,m:'Snídaně'},{n:'Řecký jogurt 0%',g:350,m:'Sv1+Večeře'},{n:'Kiwi',g:80,m:'Sv1'},{n:'Kešu ořechy',g:15,m:'Sv1'},{n:'Kuřecí prsa mleté',g:200,m:'Oběd'},{n:'Rýže basmati',g:70,m:'Oběd'},{n:'Paprika červená',g:200,m:'Oběd'},{n:'Rajčata',g:260,m:'Oběd+Večeře'},{n:'Parmezán',g:20,m:'Oběd'},{n:'Celozrnné crackery',g:40,m:'Sv2'},{n:'Hummus',g:80,m:'Sv2'},{n:'Brambory',g:200,m:'Večeře'},{n:'Okurka',g:160,m:'Večeře'},{n:'Červená cibule',g:30,m:'Večeře'},{n:'Olivový olej',g:10,m:'Večeře'},{n:'Vejce',g:50,note:'1 ks',m:'Dezert'}],
+  [{n:'Ovesné vločky',g:90,m:'Snídaně'},{n:'Protein prášek',g:40,m:'Snídaně'},{n:'Polotučné mléko',g:450,m:'Snídaně+Sv2'},{n:'Maliny',g:80,m:'Snídaně'},{n:'Med',g:10,m:'Snídaně'},{n:'Skyr',g:200,m:'Sv1'},{n:'Jahody',g:100,m:'Sv1'},{n:'Lněné semínko',g:10,m:'Sv1'},{n:'Kuřecí prsa',g:400,m:'Oběd+Večeře'},{n:'Quinoa suchá',g:80,m:'Oběd'},{n:'Rajčata cherry',g:80,m:'Oběd'},{n:'Okurka',g:160,m:'Oběd+Večeře'},{n:'Feta sýr',g:30,m:'Oběd'},{n:'Petrželka čerstvá',g:20,m:'Večeře'},{n:'Bulgur suchý',g:80,m:'Večeře'},{n:'Brambory',g:200,m:'Večeře'},{n:'Cizrna z plechovky',g:120,m:'Večeře'},{n:'Mango mražené',g:240,m:'Dezert'},{n:'Vejce',g:50,note:'1 ks',m:'Dezert'}],
+  [{n:'Celozrnný chléb',g:100,m:'Snídaně'},{n:'Vejce',g:100,note:'2 ks',m:'Snídaně'},{n:'Protein prášek vanilka',g:50,m:'Snídaně+Sv1'},{n:'Borůvky',g:80,m:'Snídaně'},{n:'Polotučné mléko',g:700,m:'Snídaně+Sv1+Sv2'},{n:'Banán',g:100,m:'Sv1'},{n:'Špenát čerstvý',g:40,m:'Sv1'},{n:'Kuřecí prsa',g:400,m:'Oběd+Večeře'},{n:'Rýže basmati',g:80,m:'Oběd'},{n:'Listový salát',g:60,m:'Oběd'},{n:'Rajčata cherry',g:80,m:'Oběd'},{n:'Piniové oříšky',g:15,m:'Oběd'},{n:'Protein granola bar',g:55,m:'Sv2'},{n:'Celozrnná pita',g:80,m:'Večeře'},{n:'Řecký jogurt',g:80,m:'Večeře'},{n:'Maliny',g:160,m:'Dezert'},{n:'Tmavá čokoláda 85%',g:50,m:'Dezert'}],
+  [{n:'Ovesná mouka',g:90,m:'Snídaně'},{n:'Protein prášek',g:55,m:'Snídaně+Sv1'},{n:'Řecký jogurt 0%',g:420,m:'Snídaně+Sv1+Oběd'},{n:'Borůvky',g:200,m:'Snídaně'},{n:'Polotučné mléko',g:300,m:'Snídaně'},{n:'Protein granola',g:40,m:'Sv1'},{n:'Maliny',g:80,m:'Sv1'},{n:'Med',g:18,m:'Snídaně+Sv1'},{n:'Kuřecí prsa',g:440,m:'Oběd+Večeře'},{n:'Rýže basmati',g:80,m:'Oběd'},{n:'Okurka',g:80,m:'Oběd'},{n:'Paprika mix',g:150,m:'Večeře'},{n:'Avokádo',g:160,m:'Večeře+Dezert'},{n:'Vejce',g:100,note:'2 ks',m:'Dezert'},{n:'Kakao',g:15,m:'Dezert'},{n:'Jahody',g:100,m:'Dezert'}],
+  [{n:'Celozrnný chléb',g:100,m:'Snídaně'},{n:'Avokádo',g:80,m:'Snídaně'},{n:'Vejce',g:100,note:'2 ks',m:'Snídaně'},{n:'Cottage cheese',g:100,m:'Snídaně'},{n:'Mango',g:120,m:'Sv1'},{n:'Řecký jogurt 0%',g:270,m:'Sv1+Oběd'},{n:'Protein prášek',g:50,m:'Sv1'},{n:'Polotučné mléko',g:430,m:'Sv1+Dezert'},{n:'Kuřecí prsa',g:420,m:'Oběd+Večeře',note:'+ navíc na meal prep!'},{n:'Celozrnné nudle',g:80,m:'Oběd'},{n:'Mrkev',g:80,m:'Oběd'},{n:'Celer',g:60,m:'Oběd'},{n:'Protein tyčinka',g:55,m:'Sv2'},{n:'Maliny',g:100,m:'Sv2'},{n:'Brambory',g:200,m:'Večeře',note:'uvař navíc na týden!'},{n:'Brokolice',g:120,m:'Večeře'},{n:'Olivový olej',g:10,m:'Večeře'},{n:'Ovesné vločky',g:80,m:'Dezert'},{n:'Kefír',g:380,m:'Dezert'},{n:'Granola',g:60,m:'Dezert'}],
+];
+
+// SHOP_V2 — variant 2 items per day
+const SHOP_V2 = [
+  [{n:'Vejce',g:300,note:'6 ks',m:'Snídaně'},{n:'Celozrnný toast',g:160,m:'Snídaně'},{n:'Avokádo',g:140,m:'Snídaně'},{n:'Rajče',g:160,m:'Snídaně'},{n:'Olivový olej',g:16,m:'Snídaně'},{n:'Jahody',g:240,m:'Sv1'},{n:'Tvaroh 0%',g:400,m:'Sv1'},{n:'Lněné semínko',g:20,m:'Sv1'},{n:'Pevné tofu',g:440,m:'Oběd+Večeře'},{n:'Rýžové nudle',g:160,m:'Oběd'},{n:'Brokolice',g:300,m:'Oběd'},{n:'Mrkev',g:160,m:'Oběd'},{n:'Sójová omáčka',g:30,m:'Oběd'},{n:'Sezamový olej',g:16,m:'Oběd'},{n:'Edamame loupané',g:200,m:'Sv2'},{n:'Parmezán',g:40,m:'Sv2'},{n:'Římský salát',g:300,m:'Večeře'},{n:'Celozrnný chléb',g:100,m:'Večeře'},{n:'Caesar dresink light',g:60,m:'Večeře'},{n:'Tmavá čokoláda 85%',g:50,m:'Dezert'}],
+  [{n:'Chia semínka',g:80,m:'Snídaně'},{n:'Polotučné mléko',g:600,m:'Snídaně'},{n:'Řecký jogurt 0%',g:240,m:'Snídaně'},{n:'Mango',g:200,m:'Snídaně'},{n:'Strouhaný kokos',g:20,m:'Snídaně'},{n:'Cottage cheese',g:400,m:'Sv1'},{n:'Jahody',g:240,m:'Sv1'},{n:'Granola bez cukru',g:40,m:'Sv1'},{n:'Kuřecí prsa',g:360,m:'Oběd+Večeře'},{n:'Celozrnná tortilla',g:140,m:'Oběd'},{n:'Okurka',g:160,m:'Oběd+Večeře'},{n:'Rajče',g:160,m:'Oběd'},{n:'Listový salát',g:80,m:'Oběd'},{n:'Cizrna z plechovky',g:300,m:'Sv2'},{n:'Paprika, kmín, sůl',g:6,m:'Sv2'},{n:'Brambory',g:500,m:'Večeře'},{n:'Máslo',g:20,m:'Večeře'},{n:'Polotučné mléko',g:160,m:'Večeře'},{n:'Banán',g:200,m:'Dezert'},{n:'Arašídové máslo',g:40,m:'Dezert'}],
+  [{n:'Celozrnný chléb',g:200,m:'Snídaně'},{n:'Avokádo',g:160,m:'Snídaně'},{n:'Vejce',g:200,note:'4 ks',m:'Snídaně'},{n:'Rajče cherry',g:160,m:'Snídaně'},{n:'Protein prášek',g:60,m:'Sv1'},{n:'Ovesná mouka',g:60,m:'Sv1'},{n:'Polotučné mléko',g:200,m:'Sv1'},{n:'Pevné tofu',g:400,m:'Oběd+Večeře'},{n:'Quinoa suchá',g:140,m:'Oběd+Večeře'},{n:'Špenát čerstvý',g:200,m:'Oběd'},{n:'Kokosové mléko',g:200,m:'Oběd'},{n:'Curry koření',g:10,m:'Oběd'},{n:'Mozzarella tyčinka',g:100,m:'Sv2'},{n:'Mrkev',g:300,m:'Sv2'},{n:'Edamame',g:160,m:'Večeře'},{n:'Miso pasta',g:40,m:'Večeře'},{n:'Sezamový olej',g:16,m:'Večeře'},{n:'Řecký jogurt 0%',g:300,m:'Dezert'},{n:'Pistácie',g:30,m:'Dezert'},{n:'Med',g:20,m:'Dezert'}],
+  [{n:'Řecký jogurt 0%',g:400,m:'Snídaně'},{n:'Protein granola',g:120,m:'Snídaně'},{n:'Borůvky',g:160,m:'Snídaně'},{n:'Med',g:16,m:'Snídaně'},{n:'Rýžové chlebíčky',g:100,m:'Sv1'},{n:'Arašídové máslo',g:40,m:'Sv1'},{n:'Banán',g:160,m:'Sv1'},{n:'Pevné tofu',g:360,m:'Oběd'},{n:'Sladké brambory',g:400,m:'Oběd'},{n:'Špenát čerstvý',g:160,m:'Oběd'},{n:'Celozrnný chléb',g:120,m:'Sv2'},{n:'Cottage cheese',g:200,m:'Sv2'},{n:'Rajče',g:160,m:'Sv2'},{n:'Cizrna z plechovky',g:240,m:'Večeře'},{n:'Kari koření',g:10,m:'Večeře'},{n:'Kokosové mléko',g:160,m:'Večeře'},{n:'Brambory',g:400,m:'Večeře'},{n:'Mango mražené',g:240,m:'Dezert (mango sorbet)'},{n:'Citron',g:0,note:'1 kus',m:'Dezert'}],
+  [{n:'Celozrnná tortilla',g:160,m:'Snídaně'},{n:'Cottage cheese',g:300,m:'Snídaně'},{n:'Jahody',g:200,m:'Snídaně'},{n:'Banán',g:120,m:'Snídaně'},{n:'Med',g:16,m:'Snídaně'},{n:'Edamame loupané',g:300,m:'Sv1'},{n:'Citron',g:0,note:'2 kusy',m:'Sv1'},{n:'Pevné tofu',g:400,m:'Oběd'},{n:'Rýže basmati',g:160,m:'Oběd'},{n:'Černé fazole z plechovky',g:200,m:'Oběd'},{n:'Kukuřice mražená',g:120,m:'Oběd'},{n:'Rajčata',g:160,m:'Oběd'},{n:'Mrkev',g:400,m:'Sv2'},{n:'Hummus',g:160,m:'Sv2'},{n:'Lilek',g:240,m:'Večeře'},{n:'Quinoa suchá',g:140,m:'Večeře'},{n:'Provence koření',g:5,m:'Večeře'},{n:'Tmavá čokoláda 85%',g:50,m:'Dezert'},{n:'Maliny',g:160,m:'Dezert'}],
+  [{n:'Protein prášek vanilka',g:50,m:'Snídaně'},{n:'Špenát čerstvý',g:120,m:'Snídaně'},{n:'Mango mražené',g:240,m:'Snídaně'},{n:'Polotučné mléko',g:400,m:'Snídaně'},{n:'Granola',g:60,m:'Snídaně'},{n:'Kiwi',g:160,m:'Snídaně'},{n:'Ovesné vločky mleté',g:100,m:'Sv1'},{n:'Arašídové máslo',g:40,m:'Sv1'},{n:'Kakao',g:10,m:'Sv1'},{n:'Quinoa suchá',g:160,m:'Oběd'},{n:'Pevné tofu',g:360,m:'Oběd'},{n:'Petrželka čerstvá',g:60,m:'Oběd'},{n:'Rajčata',g:240,m:'Oběd'},{n:'Okurka',g:200,m:'Oběd'},{n:'Máta čerstvá',g:20,m:'Oběd'},{n:'Cottage cheese',g:400,m:'Sv2'},{n:'Sladké brambory',g:500,m:'Večeře'},{n:'Kokosové mléko',g:200,m:'Večeře'},{n:'Avokádo',g:260,m:'Dezert'},{n:'Vejce',g:100,note:'2 ks',m:'Dezert'}],
+  [{n:'Ovesná mouka',g:160,m:'Snídaně'},{n:'Vejce',g:400,note:'8 ks',m:'Snídaně+Dezert'},{n:'Řecký jogurt 0%',g:200,m:'Snídaně'},{n:'Polotučné mléko',g:460,m:'Snídaně+Dezert'},{n:'Borůvky',g:200,m:'Snídaně'},{n:'Celozrnné crackery',g:100,m:'Sv1'},{n:'Avokádo',g:160,m:'Sv1'},{n:'Citron',g:0,note:'2 kusy',m:'Sv1'},{n:'Pevné tofu',g:400,m:'Oběd'},{n:'Rýže sushi',g:160,m:'Oběd'},{n:'Edamame',g:160,m:'Oběd'},{n:'Okurka',g:160,m:'Oběd'},{n:'Sójová omáčka',g:30,m:'Oběd'},{n:'Sezam',g:10,m:'Oběd'},{n:'Skyr',g:400,m:'Sv2'},{n:'Kiwi',g:160,m:'Sv2+Dezert'},{n:'Sladké brambory',g:400,m:'Večeře'},{n:'Kokosové mléko',g:200,m:'Večeře'},{n:'Thai curry pasta',g:40,m:'Večeře'},{n:'Kefír',g:380,m:'Dezert'},{n:'Granola',g:60,m:'Dezert'}],
+];
+
+// TRAINING — with who does what
+const TRAINING = [
+  {label:'Prsa + Triceps + Ramena', short:'Prsa', color:'#5b8ef0',
+   note:'50 min · Tlakové pohyby · 2× týdně (Po/Čt)',
+   schedule:'Erik a Moja cvičí stejný trénink. Na lavici se střídáte — jeden cvičí, druhý odpočívá a pomáhá kontrolovat techniku.',
+   phases:[
+    {title:'Rozcvičení — 5 min', exs:[{n:'Rotoped / běžecký pás',s:'1',r:'5 min',rest:'—',eq:'Spinningové kolo nebo běžecký pás',mu:'Zahřátí',desc:'Střední tempo.',tips:[],e:'oba',e_note:'',m_note:''}]},
+    {title:'Hlavní trénink — 38 min', exs:[
+      {n:'Bench press',s:'4',r:'10–12',rest:'60 s',eq:'Nastavitelná lavice + osa nebo jednoruční činky',mu:'Prsa, triceps, přední deltoidy',desc:'Osa dolů k dolní části prsou. Lokty pod 45°. Nohy pevně na zemi. 2 s dolů, 1 s nahoru.',tips:[{t:'ok',v:'Lokty pod 45° od těla — ne kolmo ven'},{t:'warn',v:'Nevykláněj lokty — přetěžuje ramena'}],e:'střídání',e_note:'Erik začíná jako první, Moja kontroluje techniku',m_note:'Moja si nastaví vlastní váhu'},
+      {n:'Nakloněný tlak (incline press)',s:'3',r:'10–12',rest:'60 s',eq:'Lavice 30–45° + jednoruční činky',mu:'Horní prsa, přední ramena',desc:'Lavici nastav na 30–45°. Tlač šikmo nahoru.',tips:[{t:'ok',v:'Sklon 30–45°'},{t:'warn',v:'Nezvedej záda od opěrky'}],e:'střídání',e_note:'',m_note:''},
+      {n:'Triceps pushdown',s:'3',r:'12–15',rest:'45 s',eq:'Věž (horní kladka) nebo PowerBand',mu:'Triceps',desc:'Lokty přilepeny k bokům. Pohyb jen v loktech.',tips:[{t:'ok',v:'Lokty pevně u těla — to je klíč'},{t:'warn',v:'Nezachýbávej trup'}],e:'střídání',e_note:'Erik na věži',m_note:'Moja na věži — nastaví si vlastní zátěž'},
+      {n:'Overhead triceps extension',s:'3',r:'12',rest:'45 s',eq:'Jednoruční činka, sed na lavici',mu:'Dlouhá hlava tricepsu',desc:'Činka nad hlavou. Pomalé snižování za hlavu. Lokty nahoru.',tips:[{t:'ok',v:'Lokty míří ke stropu po celou dobu'},{t:'warn',v:'Neprohýbej záda'}],e:'zároveň',e_note:'Každý má svou čínku, lze cvičit vedle sebe',m_note:''},
+      {n:'Boční upažení (lateral raise)',s:'3',r:'12–15',rest:'45 s',eq:'Jednoruční činky — lehká váha',mu:'Střední deltoid',desc:'Paže do výšky ramen. Malíček mírně výš. Pomalé snižování.',tips:[{t:'ok',v:'STOP na výšce ramen'},{t:'warn',v:'Nepoužívej houpání těla'}],e:'zároveň',e_note:'Každý má vlastní sadu činek',m_note:''},
+      {n:'Přední upažení (front raise)',s:'2',r:'12/stranu',rest:'45 s',eq:'Jednoruční činky nebo PowerBand',mu:'Přední deltoid',desc:'Střídavě do výšky ramen. Palec nahoru. Trup rovně.',tips:[{t:'ok',v:'Palec nahoru — aktivuje přední deltoidy'},{t:'warn',v:'Nehoupej trupem'}],e:'zároveň',e_note:'',m_note:''},
+    ]},
+    {title:'Cool down — 7 min', exs:[
+      {n:'Strečink prsou o zeď',s:'2',r:'30 s',rest:'—',eq:'Zeď',mu:'Pectoralis major',desc:'Ruku polož na zeď, otoč trup. Oba zároveň u každé stěny.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+      {n:'Triceps stretch přes hlavu',s:'2',r:'30 s',rest:'—',eq:'Bez vybavení',mu:'Triceps',desc:'Ruku nad hlavu, ohni, druhou táhni loket.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+      {n:'Pěnový váleček — hrudní páteř',s:'1',r:'60 s',rest:'—',eq:'Roller',mu:'Thorakální páteř',desc:'Váleček pod páteř, ruce za hlavu. Jeden cvičí, druhý čeká.',tips:[],e:'střídání',e_note:'',m_note:''},
+    ]}
+   ]
+  },
+  {label:'Záda + Biceps', short:'Záda', color:'#3ecf8e',
+   note:'50 min · Tahové pohyby · 2× týdně (Út/Pá)',
+   schedule:'Na věži se střídáte — lat pulldown a row nelze dělat zároveň na jedné věži. Zatímco jeden cvičí na věži, druhý dělá bicep curls s jednoručkami.',
+   phases:[
+    {title:'Rozcvičení — 5 min', exs:[{n:'Rotoped nebo běžecký pás',s:'1',r:'5 min',rest:'—',eq:'Kolo nebo pás',mu:'Zahřátí',desc:'Uvolněné tempo.',tips:[],e:'oba',e_note:'',m_note:''}]},
+    {title:'Hlavní trénink — 38 min', exs:[
+      {n:'Lat pulldown (stahování kladky)',s:'4',r:'10–12',rest:'60 s',eq:'Věž — horní kladka + široká tyč',mu:'Latissimus dorsi, biceps, zadní deltoidy',desc:'Tahem přitáhni tyč k hornímu hrudníku. Lopatky dolů. "Táhnu lokty, ne ruce."',tips:[{t:'ok',v:'Mysli: lokty dolů k bokům — ne ruce dolů'},{t:'warn',v:'Netlač hlavu dopředu — hrozí zranění šíje'}],e:'střídání',e_note:'Erik na věži, Moja dělá mezitím bicep curl nebo drží pozici',m_note:'Moja na věži, Erik dělá mezitím hammer curl'},
+      {n:'Seated cable row (přítah v sedu)',s:'4',r:'10–12',rest:'60 s',eq:'Věž — dolní kladka',mu:'Střed zad, biceps, lats',desc:'Sed čelem k věži. Přitáhni k žaludku, lopatky k sobě.',tips:[{t:'ok',v:'Lopatky stáhni k sobě — drž 1 s'},{t:'warn',v:'Nepoklápěj se dopředu při návratu'}],e:'střídání',e_note:'Střídejte stejně jako u pulldown',m_note:''},
+      {n:'Bent-over dumbbell row',s:'3',r:'10–12/stranu',rest:'60 s',eq:'Jednoruční činka + lavice',mu:'Lats, střed zad, biceps',desc:'Opři se o lavici. Táhni čínku k boku trupu. Loket podél těla.',tips:[{t:'ok',v:'Loket táhni podél těla'},{t:'warn',v:'Nezapínej záda rotací'}],e:'zároveň',e_note:'Každý na jiné straně lavice — oba cvičí najednou',m_note:''},
+      {n:'Face pull s gumou',s:'3',r:'15',rest:'45 s',eq:'PowerBand guma + věž',mu:'Zadní deltoid, rotátory, trapéz',desc:'Ve výšce obličeje. Táhni k tváři, lokty ven.',tips:[{t:'ok',v:'Lokty nahoru a ven — ruce k uším'},{t:'warn',v:'Nejdůležitější cvik pro zdravá ramena — nedávej malou váhu'}],e:'střídání',e_note:'',m_note:''},
+      {n:'Bicep curl střídavě',s:'3',r:'12/stranu',rest:'45 s',eq:'Jednoruční činky Technogym',mu:'Biceps brachii',desc:'Lokty u trupu. Střídavě, plná supinace nahoře.',tips:[{t:'ok',v:'Otočení dlaně (supinace) nahoře'},{t:'warn',v:'Lokty pevně u trupu — nehoupej'}],e:'zároveň',e_note:'Oba cvičí najednou s vlastními činkami',m_note:''},
+      {n:'Hammer curl (kladivový kurl)',s:'3',r:'12/stranu',rest:'45 s',eq:'Jednoruční činky',mu:'Brachialis, brachioradialis',desc:'Dlaně čelí k sobě. Doplňuje bicep curl.',tips:[{t:'ok',v:'Dlaně k sobě po celou dobu'},{t:'warn',v:'Nerotuj zápěstí'}],e:'zároveň',e_note:'Oba cvičí najednou',m_note:''},
+    ]},
+    {title:'Cool down — 7 min', exs:[
+      {n:'Child\'s pose + strečink lat',s:'1',r:'60 s',rest:'—',eq:'Podložka',mu:'Lats, záda',desc:'Klekni, sed na paty, ruce před sebou.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+      {n:'Biceps stretch o zeď',s:'2',r:'30 s',rest:'—',eq:'Zeď',mu:'Biceps',desc:'Ruka na zeď dlaní nahoru, otoč trup.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+    ]}
+   ]
+  },
+  {label:'Zadek + Nohy', short:'Nohy', color:'#f0a44a',
+   note:'50 min · Nejtěžší trénink! Střídejte se na olympijské ose a lavici.',
+   schedule:'Při dřepech a RDL se střídáte — nastavujete si různé váhy na ose. Při hip thrustu, goblet squatu a výpadech cvičíte zároveň — kdo s osou, kdo s kettlebellem.',
+   phases:[
+    {title:'Rozcvičení — 5 min', exs:[{n:'Běžecký pás nebo rotoped',s:'1',r:'5 min',rest:'—',eq:'Pás nebo kolo',mu:'Zahřátí dolní části těla',desc:'Poslední 2 min přidej odpor.',tips:[],e:'oba',e_note:'',m_note:''}]},
+    {title:'Hlavní trénink — 38 min', exs:[
+      {n:'Barbell squat (dřep s osou)',s:'4',r:'8–10',rest:'90 s',eq:'Olympijská osa + kotouče',mu:'Quadriceps, gluteus, hamstringy, core',desc:'Osa na trapézech. Nohy na šíři ramen. Dřepni do hloubky, záda rovná.',tips:[{t:'ok',v:'ZAČÁTEČNÍK: první 2 tréninky bez osy nebo jen s tyčí'},{t:'warn',v:'Kolena sledují špičky — neutíkají dovnitř'}],e:'střídání',e_note:'Erik dřepuje, Moja odpočívá a kontroluje techniku',m_note:'Moja dřepuje, Erik si mezitím protahuje kyčle'},
+      {n:'Romanian deadlift (RDL)',s:'4',r:'10–12',rest:'75 s',eq:'Olympijská osa nebo kettlebelly',mu:'Hamstringy, gluteus, záda',desc:'Ohýbáš v kyčlích, ne v zádech! Osa klouže po stehnech.',tips:[{t:'ok',v:'Pohyb v kyčlích — záda ROVNÁ'},{t:'warn',v:'Nezakulacuj záda — nejnebezpečnější chyba'}],e:'střídání',e_note:'Střídejte na ose, každý má svou váhu',m_note:''},
+      {n:'Hip thrust s osou nebo kettlebellem',s:'4',r:'12–15',rest:'60 s',eq:'Nastavitelná lavice + osa nebo kettlebell',mu:'Gluteus maximus — primárně!',desc:'Záda o lavici. V horní pozici zmáčkni zadek a drž 1 s.',tips:[{t:'ok',v:'THE cvik na zadek — nejlepší aktivace gluteů'},{t:'warn',v:'Drž 1 sekundu nahoře a vědomě zmáčkni'}],e:'střídání',e_note:'Erik s osou (těžší), Moja s kettlebellem (nebo naopak)',m_note:''},
+      {n:'Goblet squat s kettlebellem',s:'3',r:'12–15',rest:'60 s',eq:'Kettlebell',mu:'Quadriceps, gluteus, core',desc:'Kettlebell před hrudníkem. Hluboký dřep. Lokty tlačí kolena ven.',tips:[{t:'ok',v:'Lokty dolů — tlačí kolena ven pro lepší hloubku'},{t:'warn',v:'Záda rovná'}],e:'zároveň',e_note:'Každý má svůj kettlebell, cvičíte vedle sebe',m_note:''},
+      {n:'Reverse lunge (výpad vzad)',s:'3',r:'10/nohu',rest:'60 s',eq:'Jednoruční činky nebo vlastní váha',mu:'Gluteus medius, quadriceps',desc:'Krok vzad. Přední koleno 90°. Výpad vzad je šetrnější pro kolena.',tips:[{t:'ok',v:'Přední koleno nad chodidlem — ne před ním'},{t:'warn',v:'Nepovoluj přední koleno dovnitř'}],e:'zároveň',e_note:'Oba vedle sebe, vlastní váha nebo činky',m_note:''},
+    ]},
+    {title:'Cool down — 7 min', exs:[
+      {n:'Pigeon pose (holubí pozice)',s:'2',r:'45 s/stranu',rest:'—',eq:'Podložka',mu:'Gluteus, kyčle',desc:'Koleno před sebou, druhá noha vzad. Předlož se.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+      {n:'Quad stretch + hamstring stretch',s:'2',r:'30 s/stranu',rest:'—',eq:'Podložka + zeď',mu:'Quady, hamstringy',desc:'Stoj: ohni koleno za sebou. Leh: nohu nahoru a táhni.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+      {n:'Pěnový váleček — stehna',s:'1',r:'90 s',rest:'—',eq:'Roller',mu:'Quadriceps, IT band',desc:'Střídejte se na válečku.',tips:[],e:'střídání',e_note:'',m_note:''},
+    ]}
+   ]
+  },
+  {label:'Břicho + Funkční trénink', short:'Břicho', color:'#f05b5b',
+   note:'50 min · HIIT kardio + core trénink · Nejvíce lze cvičit zároveň!',
+   schedule:'Většinu cviků lze cvičit zároveň — obě podložky vedle sebe, dvě sady činek. Na věži (hanging knee raise, woodchop) se střídáte.',
+   phases:[
+    {title:'Kardio blok — 15 min', exs:[{n:'HIIT intervaly',s:'1',r:'15 min',rest:'—',eq:'Rotoped nebo běžecký pás',mu:'Kardio, core',desc:'3 min zahřátí → 8× (30 s rychle / 30 s pomalu) → 2 min klid. Začátečník: 1 min rychle / 1 min pomalu.',tips:[{t:'ok',v:'Střídejte se na strojích nebo jeďte paralelně'}],e:'zároveň',e_note:'Každý na svém stroji',m_note:''}]},
+    {title:'Core trénink — 28 min', exs:[
+      {n:'Dead bug (mrtvý brouk)',s:'3',r:'10/stranu',rest:'45 s',eq:'Podložka',mu:'Hluboký stabilizátor (transversus abdominis)',desc:'Ruce nahoru, kolena 90°. Pomalu spusť pravou ruku + levou nohu. Záda stále přitlačena.',tips:[{t:'ok',v:'Záda NESMÍ se odlepit od podložky'},{t:'warn',v:'Nejdůležitější core cvik — základ'}],e:'zároveň',e_note:'Dvě podložky vedle sebe',m_note:''},
+      {n:'Plank (prkno)',s:'3',r:'30–45 s',rest:'30 s',eq:'Podložka',mu:'Core, stabilizátory',desc:'Na předloktích. Záda rovná — ne dolů, ne nahoru.',tips:[{t:'ok',v:'Pokud 45 s lehkých, přidej side plank'},{t:'warn',v:'Nezahýbej záda'}],e:'zároveň',e_note:'',m_note:''},
+      {n:'Russian twist s kettlebellem',s:'3',r:'12/stranu',rest:'45 s',eq:'Kettlebell nebo jednoruční činka',mu:'Šikmé svaly (obliques)',desc:'Sed, nohy zvednuty. Rotuj s kettlebellem ze strany na stranu.',tips:[{t:'ok',v:'Kettlebell se dotýká podložky vedle boků'}],e:'zároveň',e_note:'Každý svůj kettlebell',m_note:''},
+      {n:'Hanging knee raise na věži',s:'3',r:'12–15',rest:'45 s',eq:'Věž — hrazda',mu:'Přímý břišní sval, hip flexors',desc:'Zavěs se. Ohni kolena k hrudníku. Kontrolovaně zpět.',tips:[{t:'ok',v:'Pokud těžké: jen do 90°'},{t:'warn',v:'Nehoupej se — kontrolovaný pohyb'}],e:'střídání',e_note:'Střídáte se na hrazdě věže',m_note:''},
+      {n:'Cable woodchop (sekání) na věži',s:'3',r:'12/stranu',rest:'45 s',eq:'Věž — kladka',mu:'Šikmé svaly, rotátory trupu',desc:'Táhni z výšky dolů přes tělo. Rotace v trupu, boky stojí.',tips:[{t:'warn',v:'Boky drž rovně — rotace jen v trupu'}],e:'střídání',e_note:'Střídáte se na věži',m_note:''},
+      {n:'Glute bridge pulsing',s:'3',r:'20 pulzů',rest:'30 s',eq:'Podložka',mu:'Gluteus, core',desc:'Na zádech, kolena ohnutá. Boky nahoru, pulzuj nahoře.',tips:[{t:'ok',v:'Aktivní odpočinek pro gluteové svaly'}],e:'zároveň',e_note:'',m_note:''},
+    ]},
+    {title:'Cool down — 7 min', exs:[
+      {n:'Cat-cow na podložce',s:'1',r:'10 opakování',rest:'—',eq:'Podložka',mu:'Páteř',desc:'Na čtyřech, střídáš prohnutí a zaoblení v rytmu dechu.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+      {n:'Supine spinal twist',s:'2',r:'45 s/stranu',rest:'—',eq:'Podložka',mu:'Záda, šikmé svaly',desc:'Na zádech, koleno přes tělo na zem, hlava opačně.',tips:[],e:'oba zároveň',e_note:'',m_note:''},
+    ]}
+   ]
+  },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let jPerson='e', jDay=0, jOpen={};
+let nDay=0, nVar=0, nChecked={};
+let tDay=0, tOpen={};
+
+// ============================================================
+// SCREEN SWITCH
+// ============================================================
+function showScreen(s){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.getElementById('screen-'+s).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navEl=document.getElementById('nav-'+s);
+  if(navEl) navEl.classList.add('active');
+  if(s==='jidelnicek') renderMeals();
+  if(s==='nakup') renderShop();
+  if(s==='trenink') renderTraining();
+}
+
+// ============================================================
+// JÍDELNÍČEK
+// ============================================================
+function setJPerson(p){
+  jPerson=p; jOpen={};
+  document.getElementById('jbtn-e').className='person-btn'+(p==='e'?' active-e':'');
+  document.getElementById('jbtn-m').className='person-btn'+(p==='m'?' active-m':'');
+  renderMeals();
+}
+
+function setJDay(d){ jDay=d; jOpen={}; renderMeals(); }
+
+function toggleJ(id){
+  jOpen[id]=!jOpen[id];
+  const hdr=document.querySelector(`[data-jid="${id}"]`);
+  if(!hdr) return;
+  const body=hdr.nextElementSibling;
+  const chev=hdr.querySelector('.card-chevron');
+  if(body) body.classList.toggle('open',!!jOpen[id]);
+  if(chev) chev.classList.toggle('open',!!jOpen[id]);
+}
+
+function renderMeals(){
+  document.getElementById('j-day-pills').innerHTML=DAYS.map((d,i)=>`<button class="pill${i===jDay?' active':''}" onclick="setJDay(${i})">${d}</button>`).join('');
+  const meals=MEALS[jPerson][jDay];
+  const desserts=DESSERTS[jDay];
+  const container=document.getElementById('j-meals');
+  const mealIcons=['🌅','🍎','🥙','🍊','🌙'];
+  let html=meals.map((meal,mi)=>{
+    const id=`jm-${mi}`;
+    const isOpen=!!jOpen[id];
+    return `<div class="card">
+      <div class="card-header" data-jid="${id}" onclick="toggleJ('${id}')">
+        <div class="card-icon" style="background:${jPerson==='e'?'rgba(91,142,240,.15)':'rgba(62,207,142,.12)'}">${mealIcons[mi]}</div>
+        <div class="card-info"><div class="card-title">Jídlo ${mi+1} — ${meal.title}</div><div class="card-meta">${meal.variants.map(v=>v.kcal+' kcal').join(' / ')}</div></div>
+        <div class="card-chevron${isOpen?' open':''}">›</div>
+      </div>
+      <div class="card-body${isOpen?' open':''}">
+        ${meal.variants.map((v,vi)=>`
+          <div style="margin-bottom:${vi<meal.variants.length-1?'12px':'0'}">
+            <div class="${vi===0?'v1-badge':'v2-badge'} variant-badge">Varianta ${vi+1}</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:6px">${v.name}</div>
+            <div class="macro-row">
+              <span class="macro-tag m-p">B: ${v.p}g</span>
+              <span class="macro-tag m-s">S: ${v.s}g</span>
+              <span class="macro-tag m-f">T: ${v.f}g</span>
+              <span class="macro-tag m-k">${v.kcal} kcal</span>
+            </div>
+            <table class="ing-table">${v.ing.map(([name,g])=>`<tr><td>${name}</td><td>${g?g+'g':''}</td></tr>`).join('')}</table>
+            <div class="recipe-note"><strong>Postup:</strong> ${v.recipe}</div>
+          </div>
+          ${vi<meal.variants.length-1?'<hr class="var-divider">':''}
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  // DESSERT section
+  const dessertId=`jd-0`;
+  const dOpen=!!jOpen[dessertId];
+  html+=`<div class="card" style="border-color:rgba(240,164,74,.3)">
+    <div class="card-header" data-jid="${dessertId}" onclick="toggleJ('${dessertId}')">
+      <div class="card-icon" style="background:var(--amber-bg)">🍫</div>
+      <div class="card-info"><div class="card-title" style="color:var(--amber)">Dezert dne</div><div class="card-meta">${desserts.map(d=>(jPerson==='e'?d.kcal_e:d.kcal_m)+' kcal').join(' / ')}</div></div>
+      <div class="card-chevron${dOpen?' open':''}">›</div>
+    </div>
+    <div class="card-body${dOpen?' open':''}">
+      ${desserts.map((d,di)=>`
+        <div style="margin-bottom:${di<desserts.length-1?'12px':'0'}">
+          <div class="${di===0?'v1-badge':'v2-badge'} variant-badge">Varianta ${di+1}</div>
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px">${d.name}</div>
+          <div style="font-size:12px;color:var(--amber);margin-bottom:6px">${jPerson==='e'?d.kcal_e:d.kcal_m} kcal · ${d.p}g bílkovin${d.note?' · '+d.note:''}</div>
+          <div class="recipe-note">${d.desc}</div>
+        </div>
+        ${di<desserts.length-1?'<hr class="var-divider">':''}
+      `).join('')}
+    </div>
+  </div>`;
+  container.innerHTML=html;
+}
+
+// ============================================================
+// NÁKUP
+// ============================================================
+function renderShop(){
+  document.getElementById('n-day-pills').innerHTML=DAYS.map((d,i)=>`<button class="pill${i===nDay?' active':''}" onclick="setNDay(${i})">${d}</button>`).join('');
+  document.getElementById('n-var-pills').innerHTML=`<button class="pill${nVar===0?' active-e':''}" onclick="setNVar(0)">Varianta 1</button><button class="pill${nVar===1?' active-amber':''}" onclick="setNVar(1)">Varianta 2</button>`;
+  const items=(nVar===0?SHOP_V1:SHOP_V2)[nDay];
+  const total=items.length;
+  const done=items.filter((_,i)=>nChecked[`${nDay}-${nVar}-${i}`]).length;
+  document.getElementById('n-summary').innerHTML=`
+    <div class="stat-card" style="flex:1"><div class="stat-label">Položek</div><div class="stat-val" style="font-size:16px">${total}</div></div>
+    <div class="stat-card" style="flex:1"><div class="stat-label">Zbývá</div><div class="stat-val" style="font-size:16px;color:var(--accent-e)">${total-done}</div></div>
+    <div class="stat-card" style="flex:1"><div class="stat-label">Hotovo</div><div class="stat-val" style="font-size:16px;color:var(--green)">${done}</div></div>`;
+  const groups={};
+  items.forEach((item,i)=>{const g=item.m||'Ostatní';if(!groups[g])groups[g]=[];groups[g].push({...item,idx:i});});
+  let html='';
+  for(const[grp,gitems]of Object.entries(groups)){
+    html+=`<div class="cat-label">${grp}</div>`;
+    html+=gitems.map(item=>{
+      const key=`${nDay}-${nVar}-${item.idx}`;
+      const checked=!!nChecked[key];
+      const qty=item.note||(item.g?item.g+'g':'');
+      return `<div class="shop-item"><div class="shop-check${checked?' checked':''}" onclick="toggleCheck('${key}')"></div><div class="shop-name${checked?' done':''}">${item.n}</div>${qty?`<div class="shop-qty">${qty}</div>`:''}</div>`;
+    }).join('');
+  }
+  document.getElementById('n-list').innerHTML=html;
+}
+function setNDay(d){nDay=d;renderShop();}
+function setNVar(v){nVar=v;renderShop();}
+function toggleCheck(key){nChecked[key]=!nChecked[key];renderShop();}
+function clearChecked(){nChecked={};renderShop();}
+
+// ============================================================
+// TRÉNINK
+// ============================================================
+function renderTraining(){
+  document.getElementById('t-day-pills').innerHTML=TRAINING.map((t,i)=>`<button class="pill${i===tDay?' active':''}" onclick="setTDay(${i})">${t.short}</button>`).join('');
+  const day=TRAINING[tDay];
+  let html=`<div class="notice" style="border-left:3px solid ${day.color};border-radius:0 var(--r) var(--r) 0">${day.note}</div>`;
+  html+=`<div class="card" style="margin-bottom:12px;border-color:${day.color}33"><div style="padding:12px 16px"><div style="font-size:11px;font-weight:600;color:${day.color};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🤝 Jak se střídat</div><div style="font-size:13px;color:var(--text2);line-height:1.6">${day.schedule}</div></div></div>`;
+  let exIdx=0;
+  day.phases.forEach(phase=>{
+    html+=`<div class="phase-title">${phase.title}</div>`;
+    phase.exs.forEach(ex=>{
+      const id=`tex-${tDay}-${exIdx}`;
+      const isOpen=!!tOpen[id];
+      const whoColor=ex.e==='zároveň'?'#3ecf8e':ex.e==='oba'?'#9e9b96':'#f0a44a';
+      const whoLabel=ex.e==='zároveň'?'🟢 Oba zároveň':ex.e==='oba'?'👥 Oba':ex.e==='střídání'?'🔄 Střídáte se':'';
+      html+=`<div class="ex-card">
+        <div class="ex-header" data-tid="${id}" onclick="toggleT('${id}')">
+          <div class="ex-num" style="color:${day.color}">${exIdx+1}</div>
+          <div class="ex-info">
+            <div class="ex-name">${ex.n}</div>
+            <div class="ex-sets">${ex.s!=='1'?ex.s+'× '+ex.r:ex.r}${ex.rest!=='—'?' · '+ex.rest:''}</div>
+          </div>
+          <div class="ex-chev${isOpen?' open':''}">›</div>
+        </div>
+        <div class="ex-body${isOpen?' open':''}">
+          <div class="who-row" style="margin-top:10px">
+            <span class="who-badge" style="background:${whoColor}22;color:${whoColor}">${whoLabel}</span>
+            ${ex.e_note?`<span class="who-badge who-e">Erik: ${ex.e_note}</span>`:''}
+            ${ex.m_note?`<span class="who-badge who-m">Moja: ${ex.m_note}</span>`:''}
+          </div>
+          <div class="tag-row" style="margin-top:8px">
+            <span class="tag tag-eq">${ex.eq}</span>
+          </div>
+          <div class="tag-row">
+            <span class="tag tag-mu">${ex.mu}</span>
+          </div>
+          <div class="ex-desc">${ex.desc}</div>
+          ${ex.tips.length?ex.tips.map(t=>`<div class="${t.t==='ok'?'tip-ok':'tip-warn'}">${t.t==='ok'?'✓':'⚠'} ${t.v}</div>`).join(''):''}
+          <div class="sets-row">
+            <div class="sets-box"><div class="sets-box-label">Série</div><div class="sets-box-val">${ex.s}</div></div>
+            <div class="sets-box"><div class="sets-box-label">Opakování</div><div class="sets-box-val">${ex.r}</div></div>
+            <div class="sets-box"><div class="sets-box-label">Odpočinek</div><div class="sets-box-val">${ex.rest}</div></div>
+          </div>
+        </div>
+      </div>`;
+      exIdx++;
+    });
+  });
+  document.getElementById('t-content').innerHTML=html;
+}
+function setTDay(d){tDay=d;tOpen={};renderTraining();}
+function toggleT(id){
+  tOpen[id]=!tOpen[id];
+  const hdr=document.querySelector(`[data-tid="${id}"]`);
+  if(!hdr) return;
+  hdr.nextElementSibling.classList.toggle('open',!!tOpen[id]);
+  hdr.querySelector('.ex-chev').classList.toggle('open',!!tOpen[id]);
+}
+</script>
+</body>
+</html>
