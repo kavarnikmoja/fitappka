@@ -54,7 +54,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
 .mk{background:rgba(255,255,255,.07);color:var(--text2)}
 .ing-table{width:100%;border-collapse:collapse;font-size:13px}
 .ing-table tr{border-bottom:1px solid var(--border)}.ing-table tr:last-child{border-bottom:none}
-.ing-table td{padding:7px 0}.ing-table td:last-child{text-align:right;color:var(--text2)}
+.ing-table td{padding:7px 0}.ing-table td:last-child{text-align:right}
 .recipe-note{font-size:13px;color:var(--text2);line-height:1.65;background:var(--bg3);padding:11px 13px;border-radius:var(--r);margin-top:10px}
 .recipe-note strong{color:var(--text);font-weight:500}
 .vdiv{border:none;border-top:1px solid var(--border);margin:13px 0}
@@ -385,7 +385,18 @@ function initWater(){const g=document.getElementById('wgrid');if(!g.children.len
 function twtr(i){const b=document.getElementById('w'+i);if(b.classList.contains('full')){b.classList.remove('full');wc=Math.max(0,wc-1);}else{b.classList.add('full');wc=Math.min(8,wc+1);}updWater();}
 function updWater(){const st=document.getElementById('wstatus');if(!st)return;const ml=wc*250;const m=['Začínáme!','Dobrý start!','Pokračujte!','V polovině!','Skoro tam!','Super!','Skvěle!','Téměř cíl!','🎉 Cíl splněn!'];st.textContent=wc+'/8 sklenic · '+ml+' ml · '+(m[wc]||'');for(let i=0;i<8;i++){const b=document.getElementById('w'+i);if(b)b.classList.toggle('full',i<wc);}}
 function resetWater(){wc=0;updWater();}
-function tgBonus(id){const b=document.getElementById('bb-'+id);const c=document.getElementById('bc-'+id);const o=b.classList.contains('open');b.classList.toggle('open',!o);if(c)c.classList.toggle('open',!o);if(id==='water')initWater();}
+function tgBonus(id){
+  const b=document.getElementById('bb-'+id);
+  const c=document.getElementById('bc-'+id);
+  if(!b)return;
+  const o=b.classList.contains('open');
+  b.classList.toggle('open',!o);
+  if(c)c.classList.toggle('open',!o);
+  if(id==='water')initWater();
+  if(id==='log'){initLogDate();renderLogHistory();}
+  if(id==='meas'){initMeasDate();renderMeasHistory();}
+  if(id==='week'){renderWeekSchedule();}
+}
 const DAYS=['Po','Út','St','Čt','Pá','So','Ne'];
 const DESSERTS=[
 [{name:'Tvarohový pohár s borůvkami',kcal_e:210,kcal_m:185,p:18,desc:'Tvaroh 0% (150g E/130g M) + borůvky 80g + granola 20g + med 8g. Vrstvi. Hotovo za 2 min.',note:''},
@@ -576,7 +587,7 @@ tips:[{t:'ok',v:'Lehčí váha než u bočního upažení — přední deltoidy 
 {t:'Cool down — 7 min',exs:[
 {n:'Strečink prsou o zeď',s:'2',r:'35 s/stranu',rest:'—',eq:'Zeď',mu:'Pectoralis major',desc:'Ruku na zeď ve výšce ramene, dlaň a předloktí plochá. Otočte trup OD ruky dokud necítíte tah přes prsa. S každým výdechem se mírně víc otočte.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''},
 {n:'Overhead triceps stretch',s:'2',r:'30 s/stranu',rest:'—',eq:'Bez vybavení',mu:'Triceps',desc:'Ruku nad hlavu, ohněte v lokti za záda. Druhou rukou táhněte loket k druhé straně.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''},
-{n:'Foam roller — hrudní páteř',s:'1',r:'90 s',rest:'—',eq:'Pěnový váleček',mu:'Thorakální páteř',desc:'Váleček pod hrudní páteř (ne bederní!). Ruce za hlavou. Pomalu přejíždějte. Na bolavém místě zastavte 20 s.',steps:[],tips:[{t:'ok',v:'Mírná tupá bolest při válcování je normální a zdravá'}],e:'střídání',en:'',mn:''}
+{n:'Protažení hrudníku v dveřním rámu',s:'2',r:'30 s/stranu',rest:'—',eq:'Dveřní rám nebo sloup',mu:'Pectoralis major, přední deltoidy',desc:'Postavte se do dveřního rámu. Ruku dejte na rám ve výšce ramene, dlaň a předloktí ploché na rámu. Udělte krok vpřed a otočte trup od ruky — cítíte silný tah přes prsa. Pro variaci: ruku výš (protahuje horní prsa) nebo níž (spodní prsa).',steps:[],tips:[{t:'ok',v:'Stejně účinné jako foam roller — a stojíte vzpřímeně'}],e:'oba zároveň',en:'',mn:''}
 ]}
 ]},
 {label:'Záda + Biceps',short:'Záda',color:'#3ecf8e',
@@ -613,7 +624,7 @@ steps:['Výchozí: dlaně k sobě (palce nahoru).','Pohyb: palec míří nahoru 
 tips:[{t:'ok',v:'Kombinace bicep curl + hammer curl = plný rozvoj celé paže'}],e:'zároveň',en:'',mn:''}
 ]},
 {t:'Cool down — 7 min',exs:[
-{n:'Childʼs pose + lat stretch',s:'1',r:'60–90 s',rest:'—',eq:'Podložka',mu:'Lats, bederní páteř',desc:'Klekněte, sed na paty, ruce natáhněte co nejdál před sebou. Hlubokým dýcháním prohloubujte protažení. Asymetricky: ruce trochu doprava/doleva pro každou stranu.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''},
+{n:'Stojící protažení zad o zeď',s:'2',r:'30 s/stranu',rest:'—',eq:'Zeď nebo věž',mu:'Latissimus dorsi, bederní záda',desc:'Postavte se 50 cm od zdi bokem. Natáhněte obě ruce na zeď ve výšce ramen. Pusťte boky stranou OD zdi — cítíte tah od axily podél boku k pánvi. Pro druhou stranu se otočte. Alternativa: ruce na věži, lehce se zakloňte a nechte váhu těla protáhnout záda.',steps:[],tips:[{t:'ok',v:'Čím víc povolíte boky stranou, tím hlubší protažení lats'}],e:'oba zároveň',en:'',mn:''},
 {n:'Biceps stretch o zeď',s:'2',r:'30 s/stranu',rest:'—',eq:'Zeď',mu:'Biceps',desc:'Ruku na zeď DLANÍ NAHORU. Otočte trup OD ruky. Cítíte tah v bicepsu a přední části ramene.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''}
 ]}
 ]},
@@ -647,9 +658,9 @@ steps:['Stoj rovně. Krok vzad jednou nohou, dopad na prsty.','Snižte se: před
 tips:[{t:'ok',v:'Přední koleno rovně nad chodidlem'},{t:'w',v:'Zakymáceli jste se? Nejdřív bez závaží — naučte se rovnováhu'}],e:'zároveň',en:'Vedle sebe, vlastní váha nebo lehké činky',mn:''}
 ]},
 {t:'Cool down — 7 min',exs:[
-{n:'Pigeon pose — holubí pozice',s:'2',r:'45 s/stranu',rest:'—',eq:'Podložka',mu:'Gluteus, kyčle',desc:'Jedno koleno před sebou (trojúhelník), druhá noha vzad. Předkloňte se přes přední nohu. Hluboké dýchání = hlubší protažení s každým výdechem.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''},
+{n:'Figure-4 hýždistrečink vestoje',s:'2',r:'30 s/stranu',rest:'—',eq:'Zeď nebo věž',mu:'Gluteus maximus, piriformis, zevní rotátory',desc:'Stůjte čelem ke zdi nebo věži. Jeden kotník si položte na protilehlé koleno (tvar čísla 4). Mírně se předkloňte nebo pokrčte stojanovou nohu — cítíte silné protažení hýždisvalu. Čím hlubší sed, tím intenzivnější. Opřete se o zeď pro stabilitu.',steps:[],tips:[{t:'ok',v:'Stojící verze pigeon pose — stejně účinná, žádné válení na zemi'}],e:'oba zároveň',en:'',mn:''},
 {n:'Quad + hamstring stretch',s:'2',r:'30 s/stranu',rest:'—',eq:'Zeď nebo věž',mu:'Quadriceps, hamstringy',desc:'Quad: stoj, ohněte koleno, uchopte kotník za sebou. Hamstring: sed, jednu nohu natáhněte, táhněte prsty k sobě.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''},
-{n:'Foam roller — stehna',s:'1',r:'90 s',rest:'—',eq:'Roller',mu:'Quadriceps, IT band, hamstringy',desc:'Přední část stehna (quad), pak boční strana (IT band), pak hamstringy. Střídáte se na válečku.',steps:[],tips:[],e:'střídání',en:'',mn:''}
+{n:'Masáž stehen rukama na lavici',s:'2',r:'45 s/nohu',rest:'—',eq:'Lavice',mu:'Quadriceps, IT band',desc:'Sedněte na lavici. Pěstmi nebo palci přejíždějte pevně podél přední části stehna od kolena k tříslům. Pak boční stranu stehna. Silný tlak a pomalé přejíždění — funguje téměř stejně jako foam roller. Na bolestivém místě zastavte a udělejte malé kruhy.',steps:[],tips:[{t:'ok',v:'Pěst + silný tlak na lavici = náhrada foam rolleru. Žádné válení po podlaze.'}],e:'oba zároveň',en:'',mn:''}
 ]}
 ]},
 {label:'Břicho + Funkční',short:'Břicho',color:'#f05b5b',
@@ -689,8 +700,8 @@ steps:['Boky nahoru, zpevněte zadek.','Mini pohyb nahoru 2–3 cm, zpět — 20
 tips:[{t:'ok',v:'Aktivní odpočinek pro gluteové svaly po těžkém tréninku'}],e:'zároveň',en:'',mn:''}
 ]},
 {t:'Cool down — 7 min',exs:[
-{n:'Cat-cow',s:'1',r:'10 opak',rest:'—',eq:'Podložka',mu:'Celá páteř',desc:'Na čtyřech. Výdech = zaoblte záda (kočka). Nádech = prohněte dolů (kráva). Pomalé, v rytmu dechu.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''},
-{n:'Supine spinal twist',s:'2',r:'45 s/stranu',rest:'—',eq:'Podložka',mu:'Bederní páteř, šikmé svaly',desc:'Leh na záda. Jedno koleno přes tělo na druhou stranu. Hlava na opačnou stranu. Nechte gravitaci.',steps:[],tips:[],e:'oba zároveň',en:'',mn:''}
+{n:'Stojící rotace hrudní páteře',s:'2',r:'10 opak/stranu',rest:'—',eq:'Bez vybavení',mu:'Hrudní páteř, meziobratlové klouby',desc:'Stůjte, chodidla na šíři ramen. Ruce dejte za hlavu, lokty ven. Pomalu rotujte trupem doprava pak doleva — pohyb vychází z hrudní páteře, boky se pohybují minimálně. S každým výdechem zkuste trochu víc. Pohled sleduje loket.',steps:[],tips:[{t:'ok',v:'Pokud páteř praská — normální. Uvolňujete meziobratlové klouby.'}],e:'oba zároveň',en:'',mn:''},
+{n:'Stojící rotace páteře s oporou',s:'2',r:'30 s/stranu',rest:'—',eq:'Věž nebo zeď',mu:'Bederní páteř, šikmé svaly, rotátory trupu',desc:'Postavte se bokem k věži. Jednu ruku dejte na věž ve výšce pasu. Pomalu rotujte trupem OD věže — otočte se co nejvíce za sebe, záda rovná. Cítíte protažení podél celé páteře.',steps:[],tips:[{t:'ok',v:'Stojící twist je bezpečnější pro bederní páteř po intenzivním tréninku'}],e:'oba zároveň',en:'',mn:''}
 ]}
 ]},
 {label:'Doma — bez vybavení',short:'Doma',color:'#a78bfa',
@@ -834,7 +845,8 @@ ${meal.variants.map((v,vi)=>`<div style="margin-bottom:${vi<meal.variants.length
 <div class="${vi===0?'v1b':'v2b'} vbadge">Varianta ${vi+1}</div>
 <div style="font-size:14px;font-weight:500;margin-bottom:6px">${v.name}</div>
 <div class="macro-row"><span class="mt mp">B: ${v.p}g</span><span class="mt ms">S: ${v.s}g</span><span class="mt mf">T: ${v.f}g</span><span class="mt mk">${v.kcal} kcal</span></div>
-<table class="ing-table">${v.ing.map(([n,g])=>`<tr><td>${n}</td><td>${g?g+'g':''}</td></tr>`).join('')}</table>
+<table class="ing-table"><thead><tr style="border-bottom:1px solid var(--border2)"><td style="font-size:11px;color:var(--text3);padding-bottom:5px">Ingredience</td><td style="text-align:right;font-size:11px;color:var(--ae);padding-bottom:5px">Erik</td><td style="text-align:right;font-size:11px;color:var(--am);padding-bottom:5px">Moja</td></tr></thead>${MEALS_E[jD][mi].variants[vi].ing.map(([n,gE],ii)=>{const row=MEALS_M[jD][mi].variants[vi].ing[ii];const gM=row?row[1]:0;return `<tr><td>${n}</td><td style="text-align:right;color:var(--ae)">${gE?gE+'g':'—'}</td><td style="text-align:right;color:var(--am)">${gM?gM+'g':'—'}</td></tr>`}).join('')}</table>
+<div style="display:flex;gap:5px;flex-wrap:wrap;margin:7px 0 2px;font-size:12px">${(()=>{const eT=MEALS_E[jD][mi].variants[vi].ing.reduce((s,[,g])=>s+(Number(g)||0),0);const mT=Math.round(eT*.88);return '<span style="background:rgba(255,255,255,.05);border-radius:20px;padding:2px 9px;color:var(--text2)">Celkem: '+(eT+mT)+'g</span> <span style="background:rgba(91,142,240,.1);border-radius:20px;padding:2px 9px;color:var(--ae)">Erik: '+eT+'g</span> <span style="background:rgba(62,207,142,.1);border-radius:20px;padding:2px 9px;color:var(--am)">Moja: '+mT+'g</span>';})()} </div>
 <div class="recipe-note"><strong>Postup:</strong> ${v.recipe}</div>
 </div>${vi<meal.variants.length-1?'<hr class="vdiv">':''}`).join('')}
 </div></div>`;
@@ -1022,15 +1034,6 @@ el.innerHTML=schedule.map(s=>`<div style="display:flex;align-items:center;gap:10
 <div style="flex:1"><div style="font-size:13px;font-weight:500">${s.day}</div><div style="font-size:11px;color:var(--text2);margin-top:1px">${s.label}</div></div>
 <div style="font-size:11px;padding:2px 8px;border-radius:20px;background:${s.color}15;color:${s.color};white-space:nowrap">${s.action}</div>
 </div>`).join('');
-}
-
-// Patch tgBonus to init sub-components
-const _origTgBonus=tgBonus;
-function tgBonus(id){
-_origTgBonus(id);
-if(id==='log'){initLogDate();renderLogHistory();}
-if(id==='meas'){initMeasDate();renderMeasHistory();}
-if(id==='week'){renderWeekSchedule();}
 }
 
 </script>
